@@ -1,18 +1,18 @@
 {
- "generatedAt": "2026-10-17T19:10:40.049Z",
+ "generatedAt": "2026-10-17T19:13:59.590Z",
  "stats": {
-  "scannedAt": "2026-10-17T19:10:40.049Z",
+  "scannedAt": "2026-10-17T19:13:59.590Z",
   "total": 18,
   "openIssues": 0,
   "fresh": 0,
-  "unreachable": 1
+  "unreachable": 0
  },
  "repos": [
   {
    "repo": "bennett-dsh/dsh-plugin-usage",
    "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues",
-   "reachable": false,
-   "error": "403 Forbidden {\"message\":\"The 'bennett-dsh' organization forbids access via a fine-grained personal access tokens if the token's lifetime is greater than 366 days. Please adjust your token's lif",
+   "reachable": true,
+   "error": null,
    "issues": []
   },
   {
