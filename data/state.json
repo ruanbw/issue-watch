@@ -1,0 +1,160 @@
+{
+ "repos": {
+  "cli/cli": {
+   "etag": "W/\"eb90177f572ba6f1ac1c1162e0daa499dd959329cb338d8e2734f4b99f68d44c\"",
+   "lastCreatedAt": "2026-10-17T15:43:23Z",
+   "issues": [
+    {
+     "number": 14728,
+     "title": "[aw] Dependabot PR Triage (skills-driven) exceeded daily AI credits budget",
+     "url": "https://github.com/cli/cli/issues/14728",
+     "author": "cli-triage[bot]",
+     "createdAt": "2026-10-17T15:43:23Z",
+     "comments": 3,
+     "labels": [
+      "needs-triage",
+      "agentic-workflows"
+     ]
+    },
+    {
+     "number": 14718,
+     "title": "Help text for `gh ruleset view` and `gh search issues`/`prs` refers to flags these commands do not have",
+     "url": "https://github.com/cli/cli/issues/14718",
+     "author": "fjvbn2003",
+     "createdAt": "2026-10-16T15:54:05Z",
+     "comments": 1,
+     "labels": [
+      "needs-triage"
+     ]
+    },
+    {
+     "number": 14715,
+     "title": "[aw] Dependabot PR Triage (skills-driven) exceeded daily AI credits budget",
+     "url": "https://github.com/cli/cli/issues/14715",
+     "author": "cli-triage[bot]",
+     "createdAt": "2026-10-16T13:48:00Z",
+     "comments": 20,
+     "labels": [
+      "needs-triage",
+      "agentic-workflows"
+     ]
+    },
+    {
+     "number": 14711,
+     "title": "gh pr merge reports a bogus \"invalid email address\"",
+     "url": "https://github.com/cli/cli/issues/14711",
+     "author": "nex3",
+     "createdAt": "2026-10-16T01:11:44Z",
+     "comments": 2,
+     "labels": [
+      "more-info-needed",
+      "needs-triage",
+      "gh-pr"
+     ]
+    },
+    {
+     "number": 14704,
+     "title": "`gh run list` show cancelled jobs icon",
+     "url": "https://github.com/cli/cli/issues/14704",
+     "author": "A4-Tacks",
+     "createdAt": "2026-10-15T13:58:54Z",
+     "comments": 2,
+     "labels": [
+      "enhancement",
+      "gh-run"
+     ]
+    },
+    {
+     "number": 14703,
+     "title": "`gh issue create --type` creates the issue, then exits 1 with `type \"X\" not found` without printing its URL (causes duplicates on retry)",
+     "url": "https://github.com/cli/cli/issues/14703",
+     "author": "konard",
+     "createdAt": "2026-10-15T13:31:49Z",
+     "comments": 1,
+     "labels": [
+      "bug",
+      "priority-2",
+      "gh-issue"
+     ]
+    }
+   ]
+  },
+  "github/docs": {
+   "etag": "W/\"6a37852622329afaba08d6d287d8b9874f926f3eae4acfcf9cebf390dff18abe\"",
+   "lastCreatedAt": "2026-10-17T17:57:39Z",
+   "issues": [
+    {
+     "number": 46357,
+     "title": "Copilot cloud agent: the Atlassian MCP example uses a local npm bridge for a remote server",
+     "url": "https://github.com/github/docs/issues/46357",
+     "author": "playb0t",
+     "createdAt": "2026-10-17T17:57:39Z",
+     "comments": 0,
+     "labels": [
+      "triage"
+     ]
+    },
+    {
+     "number": 46354,
+     "title": "workflow-syntax reference: `description`, `default` and `options` keys for `on.workflow_dispatch.inputs.<input_id>` are undocumented",
+     "url": "https://github.com/github/docs/issues/46354",
+     "author": "ssmurfgg04-gif",
+     "createdAt": "2026-10-17T14:14:03Z",
+     "comments": 0,
+     "labels": [
+      "triage"
+     ]
+    },
+    {
+     "number": 46351,
+     "title": "Incorrect Auto Tier Availability Information in Copilot Documentation",
+     "url": "https://github.com/github/docs/issues/46351",
+     "author": "ashis-baral",
+     "createdAt": "2026-10-17T07:42:02Z",
+     "comments": 0,
+     "labels": [
+      "content",
+      "triage"
+     ]
+    },
+    {
+     "number": 46342,
+     "title": "Copilot Auto discount documentation says 10%, but VS Code shows 30%",
+     "url": "https://github.com/github/docs/issues/46342",
+     "author": "pimmink",
+     "createdAt": "2026-10-16T11:03:56Z",
+     "comments": 4,
+     "labels": [
+      "content",
+      "copilot",
+      "builder persona"
+     ]
+    },
+    {
+     "number": 46334,
+     "title": "permissionRequest hook: the input payload is not documented",
+     "url": "https://github.com/github/docs/issues/46334",
+     "author": "svg153",
+     "createdAt": "2026-10-15T14:21:54Z",
+     "comments": 1,
+     "labels": [
+      "content",
+      "copilot",
+      "builder persona"
+     ]
+    },
+    {
+     "number": 46327,
+     "title": "Update MCP documentation to use `mcp.json` file instead of `settings.json` in VS Code",
+     "url": "https://github.com/github/docs/issues/46327",
+     "author": "ashis-baral",
+     "createdAt": "2026-10-15T06:33:40Z",
+     "comments": 0,
+     "labels": [
+      "content"
+     ]
+    }
+   ]
+  }
+ }
+}

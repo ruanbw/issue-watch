@@ -35,7 +35,23 @@
 | `data/recent.json` | "最近新增"滚动窗口,默认 7 天 |
 | `docs/index.html` | 看板页面,无框架无 CDN |
 | `docs/data.json` | 页面读取的公开快照,由脚本生成 |
-| `README.md` | `<!-- ISSUE-WATCH:START -->` 与 `<!-- ISSUE-WATCH:END -->` 之间的表格自动生成,块外随便写 |
+| `README.md` | `<!-- ISSUE-WATCH:START -->
+## Issue 总览
+
+扫描时间:2026-10-17 18:19 UTC · 仓库 2 个 · open issue 12 个 · 本轮新增 **0** 个
+
+### 最近新增(近 7 天)
+
+_最近没有新增 issue_
+
+### 各仓库状态
+
+| 仓库 | open | 最新 issue | 时间 |
+|---|--:|---|---|
+| [github/docs](https://github.com/github/docs/issues) | 6 | [#46357 Copilot cloud agent: the Atlassian MCP example uses a local npm bridge for a remote server](https://github.com/github/docs/issues/46357) | 22 分钟前 |
+| [cli/cli](https://github.com/cli/cli/issues) | 6 | [#14728 [aw] Dependabot PR Triage (skills-driven) exceeded daily AI credits budget](https://github.com/cli/cli/issues/14728) | 2 小时前 |
+
+<!-- ISSUE-WATCH:END -->` 之间的表格自动生成,块外随便写 |
 
 ## 部署步骤
 
