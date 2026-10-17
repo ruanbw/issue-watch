@@ -1,18 +1,18 @@
 {
- "generatedAt": "2026-10-17T18:19:58.807Z",
+ "generatedAt": "2026-10-17T18:45:26.361Z",
  "stats": {
-  "scannedAt": "2026-10-17T18:19:58.807Z",
+  "scannedAt": "2026-10-17T18:45:26.361Z",
   "total": 2,
   "openIssues": 12,
   "fresh": 0,
-  "unreachable": 0
+  "unreachable": 2
  },
  "repos": [
   {
    "repo": "github/docs",
    "url": "https://github.com/github/docs/issues",
-   "reachable": true,
-   "error": null,
+   "reachable": false,
+   "error": "403 rate limit exceeded {\"message\":\"API rate limit exceeded for 68.220.61.176. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)\",\"d",
    "issues": [
     {
      "number": 46357,
@@ -90,8 +90,8 @@
   {
    "repo": "cli/cli",
    "url": "https://github.com/cli/cli/issues",
-   "reachable": true,
-   "error": null,
+   "reachable": false,
+   "error": "403 rate limit exceeded {\"message\":\"API rate limit exceeded for 68.220.61.176. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)\",\"d",
    "issues": [
     {
      "number": 14728,
