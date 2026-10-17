@@ -78,9 +78,10 @@ let data = null;
 function render(d) {
   data = d;
   const s = d.stats || {};
+  // 只在数据真的有变化时才刷新时间戳,所以这里说"数据更新于",并带上相对时间
   document.getElementById('meta').textContent = d.generatedAt
-    ? '扫描时间 ' + fmt(d.generatedAt) + ' · 仓库 ' + (s.total ?? '—') +
-      ' 个 · 失败 ' + (s.unreachable ?? 0) + ' 个'
+    ? '数据更新于 ' + ago(d.generatedAt) + '(' + fmt(d.generatedAt) + ') · 仓库 ' +
+      (s.total ?? '—') + ' 个 · 失败 ' + (s.unreachable ?? 0) + ' 个 · 定时检查中'
     : '尚未扫描 —— 在 Actions 里运行一次 issue-watch workflow,然后刷新本页';
 
   document.getElementById('stats').innerHTML = [
