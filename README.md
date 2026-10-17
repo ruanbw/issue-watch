@@ -2,6 +2,8 @@
 
 一个仓库、一个 token,监控散落在多个 org / 账号下的所有 GitHub 仓库,并自动发布成网页看板。
 
+**在线看板:<https://ruanbw.github.io/issue-watch/>**
+
 ![dashboard](preview.png)
 
 ## 它怎么工作
@@ -9,10 +11,10 @@
 ```
 每 15 分钟 (cron)
    └─ scan.mjs 读 repos.txt,并发抓取每个仓库的 open issues
-        └─ 带 If-None-Match:内容没变返回 304,不消耗 API 配额
-        └─ 和上一轮水位线比对,认出"新增"
-        └─ 写 data/state.json(内部状态)+ docs/data.json(公开快照)
-        └─ 更新 README 里的标记块
+        ├─ 带 If-None-Match:内容没变返回 304,不消耗 API 配额
+        ├─ 和上一轮水位线比对,认出"新增"
+        ├─ 写 data/state.json(内部状态)+ docs/data.json(公开快照)
+        ├─ 更新 README 末尾的表格块
         └─ git commit && push(数据没变就不提交)
    └─ upload-pages-artifact(docs/) + deploy-pages
         └─ https://<owner>.github.io/<repo>/
@@ -21,7 +23,7 @@
 关键点在于**它不是一个仓库一份 workflow**。你只在 `repos.txt` 里加行,跨 org、跨账号都行:
 
 - `Fine-grained PAT` 可以同时勾选多个 **resource owner**,一个 token 覆盖全部仓库
-- `ETag` 条件请求让稳态下的 API 消耗接近 0,几百个仓库也不需要调低频率
+- `ETag` 条件请求让稳态下的 API 消耗接近 0,几百个仓库也不用调低频率
 - 状态合并只在单个 job 内做,`concurrency` 防止两个 run 同时改 `data/state.json`
 
 ## 仓库结构
@@ -30,73 +32,49 @@
 |---|---|
 | `repos.txt` | **唯一需要你维护的文件**,每行 `owner/repo`,支持完整 URL 和 `#` 注释 |
 | `scripts/scan.mjs` | 抓取 + 比对 + 渲染,零第三方依赖,Node 18+ |
-| `.github/workflows/issue-watch.yml` | 定时扫描 + 提交 + 发布 Pages |
+| `.github/workflows/issue-watch.yml` | 定时扫描 → 提交数据 → 发布 Pages |
 | `data/state.json` | 内部状态(每仓 ETag、水位线、最近 issue),不要手改 |
 | `data/recent.json` | "最近新增"滚动窗口,默认 7 天 |
 | `docs/index.html` | 看板页面,无框架无 CDN |
 | `docs/data.json` | 页面读取的公开快照,由脚本生成 |
-| `README.md` | `<!-- ISSUE-WATCH:START -->
-## Issue 总览
+| `README.md` | 末尾的仓库表格由脚本维护,其余内容随便写 |
 
-扫描时间:2026-10-17 18:21 UTC · 仓库 2 个 · open issue 12 个 · 本轮新增 **0** 个
+脚本只会重写 README 里**独占一行**的 `ISSUE-WATCH:START` / `ISSUE-WATCH:END` 两个 HTML 注释之间的内容,标记块之前的一切保持原样。
 
-### 最近新增(近 7 天)
+## 部署状态
 
-_最近没有新增 issue_
+本仓库已经完成:
 
-### 各仓库状态
+- ✅ 公开仓库 `ruanbw/issue-watch`
+- ✅ Pages 已启用,`build_type=workflow`(由 `actions/deploy-pages` 发布,不依赖分支目录设置)
+- ✅ 工作流已跑通,数据回路正常(bot 会自动提交到 `main`)
+- ⬜ **`ISSUE_WATCH_TOKEN` secret 尚未配置** —— 现在用的是匿名请求(60 次/小时),只够几个仓库
 
-| 仓库 | open | 最新 issue | 时间 |
-|---|--:|---|---|
-| [github/docs](https://github.com/github/docs/issues) | 6 | [#46357 Copilot cloud agent: the Atlassian MCP example uses a local npm bridge for a remote server](https://github.com/github/docs/issues/46357) | 23 分钟前 |
-| [cli/cli](https://github.com/cli/cli/issues) | 6 | [#14728 [aw] Dependabot PR Triage (skills-driven) exceeded daily AI credits budget](https://github.com/cli/cli/issues/14728) | 2 小时前 |
+### 补上 token(必须做)
 
-<!-- ISSUE-WATCH:END -->` 之间的表格自动生成,块外随便写 |
+1. Settings → Developer settings → **Fine-grained tokens** → Generate new token
+   - **Resource owner**:逐个添加,选上所有相关 org / 账号 ← 跨 owner 靠这一步
+   - **Repository access**:All repositories,或手动挑要盯的仓库
+   - **Permissions**:`Issues: Read-only`、`Metadata: Read-only`
+   - 有效期最长 1 年,到期重新生成
+2. 本仓库 Settings → Secrets and variables → Actions → New repository secret
+   - Name:`ISSUE_WATCH_TOKEN`
+   - Value:上一步生成的 token
+3. Actions → `issue-watch` → Run workflow,验证一轮
 
-## 部署步骤
-
-### 1. 推到 GitHub
+## 从零复刻(换 owner / 换仓库)
 
 ```bash
-git remote add origin git@github.com:<you>/issue-watch.git
+# 1. 推到你的仓库
+git remote set-url origin git@github.com:<you>/<repo>.git
 git push -u origin main
+
+# 2. 命令行启用 Pages(等价于 Settings → Pages → Source: GitHub Actions)
+gh api -X POST repos/<you>/<repo>/pages -f build_type=workflow
+
+# 3. 配置 secret 后手动触发一次
+gh workflow run issue-watch --repo <you>/<repo>
 ```
-
-### 2. 建 token(只读即可)
-
-Settings → Developer settings → **Fine-grained tokens** → Generate new token
-
-- **Resource owner**:逐个添加,选上所有相关 org / 账号 ← 跨 owner 靠这一步
-- **Repository access**:All repositories,或手动挑要盯的仓库
-- **Permissions**:`Issues: Read-only`、`Metadata: Read-only`
-- 有效期最长 1 年,到期重新生成
-
-### 3. 存 secret
-
-本仓库 Settings → Secrets and variables → Actions → New repository secret:
-
-| Name | Value |
-|---|---|
-| `ISSUE_WATCH_TOKEN` | 上一步的 token |
-
-> 不用 `GITHUB_TOKEN`,因为它只对当前仓库有效,看不到别的仓库。
-
-### 4. 打开 Pages(一次性)
-
-Settings → **Pages** → Build and deployment → **Source** 选 **GitHub Actions**。
-
-这里不用选分支和目录 —— 页面由 `actions/deploy-pages` 从 `docs/` 打包发布,`docs/` 不需要是 Pages 的默认来源。
-
-### 5. 跑第一次
-
-Actions → `issue-watch` → Run workflow。
-
-首轮只建立基线(不报"新增"),跑完后:
-
-- 看板地址在 Actions 的 `deploy` job 里,形如 `https://<you>.github.io/issue-watch/`
-- README 底部会多出仓库状态表格
-
-之后每 15 分钟自动刷新,你只管往 `repos.txt` 里加行。
 
 ## 可调参数
 
@@ -120,14 +98,16 @@ python3 -m http.server 8000 --directory docs          # 预览看板
 
 ## 边界与坑
 
+- **推送前先 `git pull --rebase`**:bot 会往 `main` 提交数据,直接 `git push` 会被拒。冲突一般只落在 `README.md` 和 `data/*.json`,重跑一次扫描即可覆盖。
 - **首次运行不报新增**:第一轮只建水位线,否则历史 issue 会全被当成新的。
 - **只看 open**:抓取用 `state=open`,开完立刻关掉的 issue 可能漏掉。
 - **配额**:认证后 5000 次/小时。没命中 ETag 时,400 仓库 × 每 15 分钟 ≈ 1600 次/小时也够;命中 304 时为 0。超过约 1000 个仓库才需要把周期放宽到 30 分钟。
 - **单仓失败不中断**:失败的仓库在看板上标红,并在 README 里列一行,不影响其它仓库。
-- **私有仓库会露名字**:`docs/data.json` 是公开的,Pages 站点任何人都能访问。敏感就把 Pages 关掉,只在本地 `python3 -m http.server --directory docs` 看。
+- **私有仓库会露名字**:`docs/data.json` 是公开的,Pages 站点任何人都能访问。敏感就关掉 Pages,只在本地 `python3 -m http.server --directory docs` 看。
 - **默认分支必须是 `main`**:`deploy` job 里 `checkout` 写死了 `ref: main`,分支不同要改。
 - **公共仓库 60 天无活动**:定时 workflow 会被 GitHub 自动禁用。本流程每次数据变化都会提交,正常不会触发。
-- **GitHub 的 cron 会延迟**:高峰期排队几分钟很常见,不是故障。
+- **cron 会延迟**:高峰期排队几分钟很常见,不是故障。
+- **Node 20 弃用警告**:来自 `configure-pages` / `deploy-pages` / `upload-artifact` 自身,不是本仓库代码,等官方升级即可。
 
 ## 变体:不要网页,要工单或 IM 通知
 

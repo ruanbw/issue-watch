@@ -238,11 +238,9 @@ ${END_MARK}`;
 }
 
 function upsertBlock(existing, block) {
-  const s = existing.indexOf(START_MARK);
-  const e = existing.indexOf(END_MARK);
-  if (s !== -1 && e !== -1 && e > s) {
-    return existing.slice(0, s) + block + existing.slice(e + END_MARK.length);
-  }
+  // 只认"独占一行"的标记,避免正文里为了举例出现的同名文本被误当成锚点
+  const marked = /^<!-- ISSUE-WATCH:START -->[\s\S]*?^<!-- ISSUE-WATCH:END -->[ \t]*$/m;
+  if (marked.test(existing)) return existing.replace(marked, block);
   return `${existing.trimEnd()}\n\n${block}\n`;
 }
 
