@@ -170,7 +170,7 @@ for (const i of freshIssues) {
 <!-- ISSUE-WATCH:START -->
 ## Issue 总览
 
-扫描时间:2026-10-17 18:53 UTC · 仓库 18 个 · open issue 0 个 · 本轮新增 **0** 个
+扫描时间:2026-10-17 19:10 UTC · 仓库 18 个 · open issue 0 个 · 本轮新增 **0** 个
 
 ### 最近新增(近 7 天)
 
@@ -180,7 +180,6 @@ _最近没有新增 issue_
 
 | 仓库 | open | 最新 issue | 时间 |
 |---|--:|---|---|
-| [bennett-dsh/dsh-plugin-usage](https://github.com/bennett-dsh/dsh-plugin-usage/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/1990](https://github.com/ruanbw/1990/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/agent-sweep](https://github.com/ruanbw/agent-sweep/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/bennett](https://github.com/ruanbw/bennett/issues) | 0 | _暂无 open issue_ | — |
@@ -198,5 +197,7 @@ _最近没有新增 issue_
 | [ruanbw/provenance-check](https://github.com/ruanbw/provenance-check/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/ruanbw](https://github.com/ruanbw/ruanbw/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/use](https://github.com/ruanbw/use/issues) | 0 | _暂无 open issue_ | — |
+
+> **1 个仓库抓取失败**: `bennett-dsh/dsh-plugin-usage`
 
 <!-- ISSUE-WATCH:END -->
