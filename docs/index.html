@@ -35,6 +35,7 @@
          border:1px solid var(--new);color:var(--new);margin-right:6px;vertical-align:1px}
   .label{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
          border:1px solid var(--line);color:var(--dim);margin-left:6px}
+  .label.warn{border-color:#d29922;color:#d29922}
   .empty,.err{color:var(--dim);padding:10px 0}
   .err{color:#d29922}
   a{color:var(--accent)}
@@ -118,19 +119,24 @@ function renderList() {
     return;
   }
   const out = repos.map(r => {
-    if (r.reachable === false) {
+    const top = (r.issues || [])[0];
+    const stale = r.reachable === false;
+    // 抓取失败但手上还有上一轮数据:照常显示,只打一个"数据过期"角标
+    if (stale && !top) {
       return `<div class="row"><div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
         <div class="iss err">抓取失败:${esc(r.error || '未知错误')}</div><div class="when">—</div></div>`;
     }
-    const top = (r.issues || [])[0];
     const labels = (top?.labels || []).map(l => `<span class="label">${esc(l)}</span>`).join('');
     const issue = top
       ? `<a href="${esc(top.url)}" target="_blank" rel="noopener">#${top.number} ${esc(top.title)}</a>`
       : '<span class="empty">暂无 open issue</span>';
     const extra = top?.comments ? ` <span class="label">${top.comments} 💬</span>` : '';
+    const staleTag = stale
+      ? ` <span class="label warn" title="${esc(r.error || '')}">数据过期</span>`
+      : '';
     return `<div class="row">
       <div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
-      <div class="iss">${issue}${labels}${extra}</div>
+      <div class="iss">${issue}${labels}${extra}${staleTag}</div>
       <div class="when">${esc(ago(top?.createdAt))}</div>
     </div>`;
   });
