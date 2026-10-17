@@ -1,0 +1,75 @@
+name: issue-watch
+
+# 一个工作流干三件事:定时扫描 -> 提交数据 -> 发布 Pages
+on:
+  schedule:
+    # GitHub cron 是 UTC,最小粒度 5 分钟,高峰期会延迟几分钟
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "repos.txt"
+      - "scripts/**"
+      - "docs/**"
+      - ".github/workflows/issue-watch.yml"
+
+# 提交数据要 contents:write,发布 Pages 要 pages:write + id-token:write
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个,避免两个 job 同时改 data/state.json
+concurrency:
+  group: issue-watch
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 扫描所有仓库
+        env:
+          # 细粒度 PAT:勾选多个 resource owner,权限只需 Issues:Read + Metadata:Read
+          GITHUB_TOKEN: ${{ secrets.ISSUE_WATCH_TOKEN }}
+        run: node scripts/scan.mjs
+
+      - name: 提交数据(无变化则跳过)
+        run: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "数据无变化,跳过提交"
+            exit 0
+          fi
+          git config user.name  "issue-watch[bot]"
+          git config user.email "issue-watch[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: refresh dashboard [skip ci]"
+          git push
+
+  deploy:
+    needs: scan
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # scan 可能刚提交了最新数据,这里要拿最新的 main
+          ref: main
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

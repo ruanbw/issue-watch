@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Issue Watch</title>
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;--accent:#58a6ff;--new:#3fb950}
+  @media (prefers-color-scheme:light){:root{--bg:#fff;--panel:#f6f8fa;--line:#d0d7de;--fg:#1f2328;--dim:#656d76;--accent:#0969da;--new:#1a7f37}}
+  *{box-sizing:border-box}
+  body{margin:0;padding:24px;background:var(--bg);color:var(--fg);
+       font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
+  .wrap{max-width:1100px;margin:0 auto}
+  h1{font-size:20px;margin:0 0 4px}
+  .meta{color:var(--dim);font-size:12px;margin-bottom:20px}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 16px}
+  .stat b{display:block;font-size:20px}
+  .stat span{color:var(--dim);font-size:12px}
+  h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);
+     margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+  input[type=search]{width:100%;padding:8px 12px;margin-bottom:14px;border-radius:6px;
+       border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:14px}
+  .row{display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}
+  .repo{flex:0 0 210px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .repo a{color:var(--fg);text-decoration:none}
+  .repo a:hover{color:var(--accent)}
+  .iss{flex:1 1 auto;min-width:0}
+  .iss a{color:var(--fg);text-decoration:none;display:block;overflow:hidden;
+         text-overflow:ellipsis;white-space:nowrap}
+  .iss a:hover{color:var(--accent)}
+  .when{flex:0 0 96px;text-align:right;color:var(--dim);font-size:12px}
+  .badge{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
+         border:1px solid var(--new);color:var(--new);margin-right:6px;vertical-align:1px}
+  .label{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
+         border:1px solid var(--line);color:var(--dim);margin-left:6px}
+  .empty,.err{color:var(--dim);padding:10px 0}
+  .err{color:#d29922}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Issue Watch</h1>
+  <div class="meta" id="meta">加载中…</div>
+  <div class="stats" id="stats"></div>
+
+  <h2>最近新增</h2>
+  <div id="recent"></div>
+
+  <h2>各仓库 open issues</h2>
+  <input type="search" id="filter" placeholder="筛选仓库或标题…">
+  <div id="list"></div>
+</div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago = iso => {
+  const d = Date.now() - Date.parse(iso);
+  if (!Number.isFinite(d)) return '—';
+  const h = Math.floor(d / 36e5);
+  if (h < 1) return Math.max(1, Math.floor(d / 6e4)) + ' 分钟前';
+  if (h < 24) return h + ' 小时前';
+  return Math.floor(h / 24) + ' 天前';
+};
+const fmt = iso => iso ? iso.replace('T', ' ').slice(0, 16) + ' UTC' : '—';
+
+fetch('data.json', { cache: 'no-store' })
+  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+  .then(render)
+  .catch(e => {
+    document.getElementById('meta').textContent = '加载 data.json 失败:' + e.message;
+  });
+
+let data = null;
+
+function render(d) {
+  data = d;
+  const s = d.stats || {};
+  document.getElementById('meta').textContent = d.generatedAt
+    ? '扫描时间 ' + fmt(d.generatedAt) + ' · 仓库 ' + (s.total ?? '—') +
+      ' 个 · 失败 ' + (s.unreachable ?? 0) + ' 个'
+    : '尚未扫描 —— 在 Actions 里运行一次 issue-watch workflow,然后刷新本页';
+
+  document.getElementById('stats').innerHTML = [
+    ['仓库', s.total ?? 0],
+    ['open issue', s.openIssues ?? 0],
+    ['本轮新增', s.fresh ?? 0],
+  ].map(([k, v]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
+
+  renderRecent(d.recent || []);
+  renderList();
+  document.getElementById('filter').addEventListener('input', renderList);
+}
+
+function renderRecent(items) {
+  const el = document.getElementById('recent');
+  if (!items.length) { el.innerHTML = '<div class="empty">最近没有新增 issue</div>'; return; }
+  el.innerHTML = items.map(i => `
+    <div class="row">
+      <div class="repo"><span class="badge">NEW</span>
+        <a href="https://github.com/${esc(i.repo)}/issues" target="_blank" rel="noopener">${esc(i.repo)}</a></div>
+      <div class="iss"><a href="${esc(i.url)}" target="_blank" rel="noopener">#${i.number} ${esc(i.title)}</a></div>
+      <div class="when">${esc(ago(i.createdAt))}</div>
+    </div>`).join('');
+}
+
+function renderList() {
+  const q = document.getElementById('filter').value.trim().toLowerCase();
+  const all = data.repos || [];
+  const repos = all.filter(r =>
+    !q || r.repo.toLowerCase().includes(q) || (r.issues || []).some(i => i.title.toLowerCase().includes(q)));
+  if (!all.length) {
+    document.getElementById('list').innerHTML =
+      '<div class="empty">还没有数据 —— 在 Actions 里运行一次 issue-watch workflow,然后刷新本页。</div>';
+    return;
+  }
+  const out = repos.map(r => {
+    if (r.reachable === false) {
+      return `<div class="row"><div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
+        <div class="iss err">抓取失败:${esc(r.error || '未知错误')}</div><div class="when">—</div></div>`;
+    }
+    const top = (r.issues || [])[0];
+    const labels = (top?.labels || []).map(l => `<span class="label">${esc(l)}</span>`).join('');
+    const issue = top
+      ? `<a href="${esc(top.url)}" target="_blank" rel="noopener">#${top.number} ${esc(top.title)}</a>`
+      : '<span class="empty">暂无 open issue</span>';
+    const extra = top?.comments ? ` <span class="label">${top.comments} 💬</span>` : '';
+    return `<div class="row">
+      <div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
+      <div class="iss">${issue}${labels}${extra}</div>
+      <div class="when">${esc(ago(top?.createdAt))}</div>
+    </div>`;
+  });
+  document.getElementById('list').innerHTML = out.length ? out.join('') : '<div class="empty">没有匹配的仓库</div>';
+}
+</script>
+</body>
+</html>
