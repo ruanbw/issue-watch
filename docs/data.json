@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-10-17T19:13:59.590Z",
+ "generatedAt": "2026-10-17T19:20:48.357Z",
  "stats": {
-  "scannedAt": "2026-10-17T19:13:59.590Z",
-  "total": 18,
+  "scannedAt": "2026-10-17T19:20:48.357Z",
+  "total": 15,
   "openIssues": 0,
   "fresh": 0,
   "unreachable": 0
@@ -11,13 +11,6 @@
   {
    "repo": "bennett-dsh/dsh-plugin-usage",
    "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
-  },
-  {
-   "repo": "ruanbw/1990",
-   "url": "https://github.com/ruanbw/1990/issues",
    "reachable": true,
    "error": null,
    "issues": []
@@ -116,20 +109,6 @@
   {
    "repo": "ruanbw/provenance-check",
    "url": "https://github.com/ruanbw/provenance-check/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
-  },
-  {
-   "repo": "ruanbw/ruanbw",
-   "url": "https://github.com/ruanbw/ruanbw/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
-  },
-  {
-   "repo": "ruanbw/use",
-   "url": "https://github.com/ruanbw/use/issues",
    "reachable": true,
    "error": null,
    "issues": []
