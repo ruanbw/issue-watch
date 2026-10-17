@@ -170,7 +170,7 @@ for (const i of freshIssues) {
 <!-- ISSUE-WATCH:START -->
 ## Issue 总览
 
-扫描时间:2026-10-17 18:46 UTC · 仓库 2 个 · open issue 12 个 · 本轮新增 **0** 个
+扫描时间:2026-10-17 18:53 UTC · 仓库 18 个 · open issue 0 个 · 本轮新增 **0** 个
 
 ### 最近新增(近 7 天)
 
@@ -180,7 +180,23 @@ _最近没有新增 issue_
 
 | 仓库 | open | 最新 issue | 时间 |
 |---|--:|---|---|
-| [github/docs](https://github.com/github/docs/issues) | 6 | [#46357 Copilot cloud agent: the Atlassian MCP example uses a local npm bridge for a remote server](https://github.com/github/docs/issues/46357) | 49 分钟前 |
-| [cli/cli](https://github.com/cli/cli/issues) | 6 | [#14728 [aw] Dependabot PR Triage (skills-driven) exceeded daily AI credits budget](https://github.com/cli/cli/issues/14728) | 3 小时前 |
+| [bennett-dsh/dsh-plugin-usage](https://github.com/bennett-dsh/dsh-plugin-usage/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/1990](https://github.com/ruanbw/1990/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/agent-sweep](https://github.com/ruanbw/agent-sweep/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/bennett](https://github.com/ruanbw/bennett/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/bennett-agent](https://github.com/ruanbw/bennett-agent/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/bennett-usage](https://github.com/ruanbw/bennett-usage/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/CertFlow](https://github.com/ruanbw/CertFlow/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/conversation-clean](https://github.com/ruanbw/conversation-clean/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/DefaultAppManager](https://github.com/ruanbw/DefaultAppManager/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/git](https://github.com/ruanbw/git/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/janus](https://github.com/ruanbw/janus/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/logo-animated-svg](https://github.com/ruanbw/logo-animated-svg/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/mosaic-model-studio](https://github.com/ruanbw/mosaic-model-studio/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/nodem-clean](https://github.com/ruanbw/nodem-clean/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/pi-deepseek-cache](https://github.com/ruanbw/pi-deepseek-cache/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/provenance-check](https://github.com/ruanbw/provenance-check/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/ruanbw](https://github.com/ruanbw/ruanbw/issues) | 0 | _暂无 open issue_ | — |
+| [ruanbw/use](https://github.com/ruanbw/use/issues) | 0 | _暂无 open issue_ | — |
 
 <!-- ISSUE-WATCH:END -->
