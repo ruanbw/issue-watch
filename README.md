@@ -41,6 +41,39 @@
 
 脚本只会重写 README 里**独占一行**的 `ISSUE-WATCH:START` / `ISSUE-WATCH:END` 两个 HTML 注释之间的内容,标记块之前的一切保持原样。
 
+## repos.txt 怎么写
+
+一行一个仓库,空行和 `#` 后面的内容会被忽略,重复自动去重。下面 4 种写法都认,可以混着写:
+
+```
+owner/repo
+https://github.com/owner/repo
+https://github.com/owner/repo.git
+git@github.com:owner/repo.git
+```
+
+跨 org、跨账号直接列在一起,token 有权限就能抓到。加完先校验格式(不联网、不需要 token):
+
+```bash
+node scripts/scan.mjs --check
+```
+
+它会打印解析出的仓库数和规范化后的地址;格式错的行走 `! 跳过无法解析的仓库:` 提示。
+
+## 私有仓库怎么办
+
+**当前版本只适合公开仓库。** `repos.txt` 在公开仓库里,`docs/data.json` 又是公开发布的,写进去等于把私有仓库名和 issue 标题一起公开。
+
+想监控私有仓库,有三条路:
+
+| 做法 | 代价 | 适合 |
+|---|---|---|
+| **双清单改造**:私有清单存 `WATCH_REPOS` secret,结果只写 README / artifact,不进 `docs/` | 需要改 `scan.mjs` | 私有仓库多、又想要公开看板 |
+| 整个 hub 仓库转私有,关掉 Pages,只看 Actions artifact 或本地页面 | 没有在线看板 | 全部都是私有仓库 |
+| 升级 GitHub Pro / Team | 私有仓库才能用 Pages | 愿意付费 |
+
+本仓库目前走第一条路的「公开部分」:`repos.txt` 里只有 18 个公开仓库,私有仓库刻意没有写进来。
+
 ## 部署状态
 
 本仓库已经完成:

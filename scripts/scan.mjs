@@ -23,6 +23,8 @@ const CONCURRENCY = Math.max(1, Number(process.env.CONCURRENCY || 8));
 const PER_PAGE = Math.max(1, Math.min(100, Number(process.env.PER_PAGE || 10)));
 const NEW_TTL_DAYS = Number(process.env.NEW_TTL_DAYS || 7);
 const DRY_RUN = process.env.DRY_RUN === '1';
+// --check:只校验 repos.txt 格式,不联网、不写文件
+const CHECK_ONLY = process.argv.includes('--check');
 
 const STATE_FILE = 'data/state.json';
 const PUBLIC_FILE = 'docs/data.json';
@@ -71,7 +73,9 @@ function parseRepos(raw) {
     const text = line.replace(/#.*$/, '').trim();
     if (!text) continue;
     const slug = text
-      .replace(/^https?:\/\/github\.com\//i, '')
+      .replace(/^https?:\/\/(www\.)?github\.com\//i, '')
+      .replace(/^git@github\.com:/i, '') // 支持从 git remote 直接粘贴
+      .replace(/^ssh:\/\/git@github\.com\//i, '')
       .replace(/\.git$/i, '')
       .replace(/\/+$/, '')
       .replace(/^\/+/, '');
@@ -251,13 +255,21 @@ async function main() {
     console.error(`找不到 ${REPOS_FILE}`);
     process.exit(1);
   }
-  if (!TOKEN) log('! 未设置 GITHUB_TOKEN,走匿名请求(60 次/小时),仅够几十个仓库');
 
   const repos = parseRepos(await readFile(REPOS_FILE, 'utf8'));
   if (!repos.length) {
     console.error(`${REPOS_FILE} 里没有有效仓库`);
     process.exit(1);
   }
+
+  // 只校验清单格式:不联网、不写文件、不需要 token
+  if (CHECK_ONLY) {
+    log(`解析成功,共 ${repos.length} 个仓库:`);
+    for (const r of repos) log(`  ${r}  ->  https://github.com/${r}/issues`);
+    return;
+  }
+
+  if (!TOKEN) log('! 未设置 GITHUB_TOKEN,走匿名请求(60 次/小时),仅够几十个仓库');
   log(`仓库 ${repos.length} 个,并发 ${CONCURRENCY}`);
 
   const state = await readJson(STATE_FILE, { repos: {} });

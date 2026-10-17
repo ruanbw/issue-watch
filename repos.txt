@@ -1,4 +1,48 @@
-# 每行一个仓库,支持 owner/repo 或完整 URL,`#` 后面是注释
-# 可以跨多个 org / 个人账号,只要你的 token 有权限
-cli/cli
-github/docs
+# ─────────────────────────────────────────────────────────────
+# 监控清单:每行一个仓库。空行和 # 注释会被忽略,重复自动去重。
+#
+# 下面 4 种写法都认:
+#   owner/repo
+#   https://github.com/owner/repo
+#   https://github.com/owner/repo.git
+#   git@github.com:owner/repo.git
+#
+# 跨 org / 跨账号直接混着写,token 有权限就能抓到。
+#
+# ⚠️ 本仓库是公开的,这个文件会随仓库一起公开。
+#    私有仓库不要写在这里 —— 见下方「私有仓库」。
+#
+# 写完先验证格式(不联网、不需要 token):
+#   node scripts/scan.mjs --check
+# ─────────────────────────────────────────────────────────────
+
+# ── bennett-dsh ──
+bennett-dsh/dsh-plugin-usage
+
+# ── ruanbw(公开仓库) ──
+ruanbw/1990
+ruanbw/agent-sweep
+ruanbw/bennett
+ruanbw/bennett-agent
+ruanbw/bennett-usage
+ruanbw/CertFlow
+ruanbw/conversation-clean
+ruanbw/DefaultAppManager
+ruanbw/git
+ruanbw/janus
+ruanbw/logo-animated-svg
+ruanbw/mosaic-model-studio
+ruanbw/nodem-clean
+ruanbw/pi-deepseek-cache
+ruanbw/provenance-check
+ruanbw/ruanbw
+ruanbw/use
+
+# ── 私有仓库(31 个)─────────────────────────────────────────
+# ruanbw-collective  27 个(全部私有)
+# ruanbw             3 个私有
+# sessioncontrol01   1 个私有
+#
+# 这些不能写进本文件:文件在公开仓库里,写进去等于公开仓库名单,
+# 而且 docs/data.json 会把 issue 标题一起发布出去。
+# 处理方式见 README「私有仓库怎么办」。
