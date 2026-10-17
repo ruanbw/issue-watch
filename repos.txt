@@ -20,7 +20,6 @@
 bennett-dsh/dsh-plugin-usage
 
 # ── ruanbw(公开仓库) ──
-ruanbw/1990
 ruanbw/agent-sweep
 ruanbw/bennett
 ruanbw/bennett-agent
@@ -35,8 +34,6 @@ ruanbw/mosaic-model-studio
 ruanbw/nodem-clean
 ruanbw/pi-deepseek-cache
 ruanbw/provenance-check
-ruanbw/ruanbw
-ruanbw/use
 
 # ── 私有仓库(31 个)─────────────────────────────────────────
 # ruanbw-collective  27 个(全部私有)
