@@ -1,7 +1,7 @@
 {
  "repos": {
   "cli/cli": {
-   "etag": "W/\"eb90177f572ba6f1ac1c1162e0daa499dd959329cb338d8e2734f4b99f68d44c\"",
+   "etag": "W/\"ab3dc8f27fe3b533392d9e4481f6d47caf8a253a60c40118df99fa360c72c3e8\"",
    "lastCreatedAt": "2026-10-17T15:43:23Z",
    "issues": [
     {
@@ -10,7 +10,7 @@
      "url": "https://github.com/cli/cli/issues/14728",
      "author": "cli-triage[bot]",
      "createdAt": "2026-10-17T15:43:23Z",
-     "comments": 3,
+     "comments": 4,
      "labels": [
       "needs-triage",
       "agentic-workflows"

@@ -1,18 +1,18 @@
 {
- "generatedAt": "2026-10-17T18:45:26.361Z",
+ "generatedAt": "2026-10-17T18:46:47.828Z",
  "stats": {
-  "scannedAt": "2026-10-17T18:45:26.361Z",
+  "scannedAt": "2026-10-17T18:46:47.828Z",
   "total": 2,
   "openIssues": 12,
   "fresh": 0,
-  "unreachable": 2
+  "unreachable": 0
  },
  "repos": [
   {
    "repo": "github/docs",
    "url": "https://github.com/github/docs/issues",
-   "reachable": false,
-   "error": "403 rate limit exceeded {\"message\":\"API rate limit exceeded for 68.220.61.176. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)\",\"d",
+   "reachable": true,
+   "error": null,
    "issues": [
     {
      "number": 46357,
@@ -90,8 +90,8 @@
   {
    "repo": "cli/cli",
    "url": "https://github.com/cli/cli/issues",
-   "reachable": false,
-   "error": "403 rate limit exceeded {\"message\":\"API rate limit exceeded for 68.220.61.176. (But here's the good news: Authenticated requests get a higher rate limit. Check out the documentation for more details.)\",\"d",
+   "reachable": true,
+   "error": null,
    "issues": [
     {
      "number": 14728,
@@ -99,7 +99,7 @@
      "url": "https://github.com/cli/cli/issues/14728",
      "author": "cli-triage[bot]",
      "createdAt": "2026-10-17T15:43:23Z",
-     "comments": 3,
+     "comments": 4,
      "labels": [
       "needs-triage",
       "agentic-workflows"

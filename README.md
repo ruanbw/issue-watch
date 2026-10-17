@@ -137,7 +137,7 @@ for (const i of freshIssues) {
 <!-- ISSUE-WATCH:START -->
 ## Issue 总览
 
-扫描时间:2026-10-17 18:45 UTC · 仓库 2 个 · open issue 12 个 · 本轮新增 **0** 个
+扫描时间:2026-10-17 18:46 UTC · 仓库 2 个 · open issue 12 个 · 本轮新增 **0** 个
 
 ### 最近新增(近 7 天)
 
@@ -147,8 +147,7 @@ _最近没有新增 issue_
 
 | 仓库 | open | 最新 issue | 时间 |
 |---|--:|---|---|
-
-
-> **2 个仓库抓取失败**: `cli/cli`、`github/docs`
+| [github/docs](https://github.com/github/docs/issues) | 6 | [#46357 Copilot cloud agent: the Atlassian MCP example uses a local npm bridge for a remote server](https://github.com/github/docs/issues/46357) | 49 分钟前 |
+| [cli/cli](https://github.com/cli/cli/issues) | 6 | [#14728 [aw] Dependabot PR Triage (skills-driven) exceeded daily AI credits budget](https://github.com/cli/cli/issues/14728) | 3 小时前 |
 
 <!-- ISSUE-WATCH:END -->
