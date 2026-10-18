@@ -1,7 +1,9 @@
 {
- "generatedAt": "2026-10-17T19:20:48.357Z",
+ "watchType": "issues",
+ "generatedAt": "2026-10-18T18:57:28.883Z",
  "stats": {
-  "scannedAt": "2026-10-17T19:20:48.357Z",
+  "scannedAt": "2026-10-18T18:57:28.883Z",
+  "watchType": "issues",
   "total": 15,
   "openIssues": 0,
   "fresh": 0,

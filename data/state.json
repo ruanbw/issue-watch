@@ -1,4 +1,5 @@
 {
+ "watchType": "issues",
  "repos": {
   "bennett-dsh/dsh-plugin-usage": {
    "etag": "\"c4b2fcb37516b3c64ebebc8f80c3c6a0559dbabf29b0b002a7054478ebab77b5\"",
