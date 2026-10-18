@@ -27,7 +27,6 @@ ruanbw/bennett-usage
 ruanbw/CertFlow
 ruanbw/conversation-clean
 ruanbw/DefaultAppManager
-ruanbw/git
 ruanbw/janus
 ruanbw/logo-animated-svg
 ruanbw/mosaic-model-studio
