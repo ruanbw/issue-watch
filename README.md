@@ -173,7 +173,7 @@ for (const i of freshIssues) {
 <!-- ISSUE-WATCH:START -->
 ## Issue 总览
 
-扫描时间:2026-10-18 19:06 UTC · 仓库 15 个 · open issue 0 个 · 本轮新增 **0** 个
+扫描时间:2026-10-18 19:07 UTC · 仓库 14 个 · open issue 0 个 · 本轮新增 **0** 个
 
 ### 最近新增(近 7 天)
 
@@ -191,7 +191,6 @@ _最近没有新增 issue_
 | [ruanbw/CertFlow](https://github.com/ruanbw/CertFlow/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/conversation-clean](https://github.com/ruanbw/conversation-clean/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/DefaultAppManager](https://github.com/ruanbw/DefaultAppManager/issues) | 0 | _暂无 open issue_ | — |
-| [ruanbw/git](https://github.com/ruanbw/git/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/janus](https://github.com/ruanbw/janus/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/logo-animated-svg](https://github.com/ruanbw/logo-animated-svg/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/mosaic-model-studio](https://github.com/ruanbw/mosaic-model-studio/issues) | 0 | _暂无 open issue_ | — |

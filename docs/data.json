@@ -1,10 +1,10 @@
 {
  "watchType": "issues",
- "generatedAt": "2026-10-18T18:57:28.883Z",
+ "generatedAt": "2026-10-18T19:07:52.448Z",
  "stats": {
-  "scannedAt": "2026-10-18T18:57:28.883Z",
+  "scannedAt": "2026-10-18T19:07:52.448Z",
   "watchType": "issues",
-  "total": 15,
+  "total": 14,
   "openIssues": 0,
   "fresh": 0,
   "unreachable": 0
@@ -62,13 +62,6 @@
   {
    "repo": "ruanbw/DefaultAppManager",
    "url": "https://github.com/ruanbw/DefaultAppManager/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
-  },
-  {
-   "repo": "ruanbw/git",
-   "url": "https://github.com/ruanbw/git/issues",
    "reachable": true,
    "error": null,
    "issues": []
