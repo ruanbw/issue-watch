@@ -8,6 +8,7 @@
  *
  * 环境变量:
  *   GITHUB_TOKEN   必需(公共仓库测试时可省略,但只有 60 次/小时)
+ *   WATCH_TYPE     监控类型: issues(默认) | prs | all
  *   CONCURRENCY    并发请求数,默认 8
  *   PER_PAGE       每个仓库抓取的 issue 数,默认 10
  *   NEW_TTL_DAYS   "最近新增"板块保留天数,默认 7
@@ -17,8 +18,16 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
+function normalizeWatchType(val) {
+  const v = String(val || 'issues').trim().toLowerCase();
+  if (v === 'pr' || v === 'prs' || v === 'pull' || v === 'pulls') return 'prs';
+  if (v === 'both' || v === 'all') return 'all';
+  return 'issues';
+}
+
 const API = process.env.GITHUB_API_URL || 'https://api.github.com';
 const TOKEN = process.env.GITHUB_TOKEN || '';
+const WATCH_TYPE = normalizeWatchType(process.env.WATCH_TYPE);
 const CONCURRENCY = Math.max(1, Number(process.env.CONCURRENCY || 8));
 const PER_PAGE = Math.max(1, Math.min(100, Number(process.env.PER_PAGE || 10)));
 const NEW_TTL_DAYS = Number(process.env.NEW_TTL_DAYS || 7);
@@ -137,6 +146,7 @@ const slimIssue = (i) => ({
   number: i.number,
   title: i.title,
   url: i.html_url,
+  isPr: Boolean(i.pull_request),
   author: i.user?.login ?? 'ghost',
   createdAt: i.created_at,
   comments: i.comments ?? 0,
@@ -146,6 +156,13 @@ const slimIssue = (i) => ({
     .slice(0, 4),
 });
 
+function matchWatchType(i) {
+  const isPr = Boolean(i.pull_request);
+  if (WATCH_TYPE === 'prs') return isPr;
+  if (WATCH_TYPE === 'issues') return !isPr;
+  return true; // 'all'
+}
+
 async function scanRepo(repo, prev) {
   const url = `${API}/repos/${repo}/issues?state=open&sort=created&direction=desc&per_page=${PER_PAGE}`;
   try {
@@ -153,7 +170,7 @@ async function scanRepo(repo, prev) {
     if (res.notModified) {
       return { ...prev, repo, reachable: true, rateRemaining: res.rateRemaining };
     }
-    const issues = (res.data ?? []).filter((i) => !i.pull_request).map(slimIssue);
+    const issues = (res.data ?? []).filter(matchWatchType).map(slimIssue);
     const newest = issues.length ? issues[0].createdAt : null;
     const watermark = [prev?.lastCreatedAt, newest].filter(Boolean).sort().pop() ?? null;
     // 首次抓取没有水位线 -> 只建基线,不把所有历史 issue 当成"新增"
@@ -197,7 +214,21 @@ const ago = (iso) => {
 const esc = (s) =>
   String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 
+const TYPE_CONFIG = {
+  issues: { title: 'Issue 总览', openLabel: 'open issue', itemHeader: '最新 issue', emptyItem: '暂无 open issue', emptyRecent: '最近没有新增 issue', repoPath: 'issues' },
+  prs: { title: 'PR 总览', openLabel: 'open PR', itemHeader: '最新 PR', emptyItem: '暂无 open PR', emptyRecent: '最近没有新增 PR', repoPath: 'pulls' },
+  all: { title: 'Issue & PR 总览', openLabel: 'open 条目', itemHeader: '最新条目', emptyItem: '暂无 open 条目', emptyRecent: '最近没有新增条目', repoPath: 'issues' },
+};
+
+function formatItemTag(i) {
+  if (WATCH_TYPE === 'all') {
+    return i.isPr ? '`[PR]` ' : '`[Issue]` ';
+  }
+  return '';
+}
+
 function buildReadmeBlock(repos, recent, stats) {
+  const cfg = TYPE_CONFIG[WATCH_TYPE] || TYPE_CONFIG.issues;
   const rows = repos
     .filter((r) => r.reachable !== false)
     .sort((a, b) => {
@@ -207,8 +238,9 @@ function buildReadmeBlock(repos, recent, stats) {
     })
     .map((r) => {
       const top = r.issues?.[0];
-      const cell = top ? `[#${top.number} ${esc(top.title)}](${top.url})` : '_暂无 open issue_';
-      return `| [${r.repo}](https://github.com/${r.repo}/issues) | ${r.issues?.length ?? 0} | ${cell} | ${ago(top?.createdAt)} |`;
+      const tag = top ? formatItemTag(top) : '';
+      const cell = top ? `${tag}[#${top.number} ${esc(top.title)}](${top.url})` : `_${cfg.emptyItem}_`;
+      return `| [${r.repo}](https://github.com/${r.repo}/${cfg.repoPath}) | ${r.issues?.length ?? 0} | ${cell} | ${ago(top?.createdAt)} |`;
     });
 
   const broken = repos.filter((r) => r.reachable === false);
@@ -219,14 +251,14 @@ function buildReadmeBlock(repos, recent, stats) {
   const recentList = recent.length
     ? recent
         .slice(0, 30)
-        .map((i) => `- \`${i.repo}\` [#${i.number} ${esc(i.title)}](${i.url}) — @${esc(i.author)} · ${ago(i.createdAt)}`)
+        .map((i) => `- \`${i.repo}\` ${formatItemTag(i)}[#${i.number} ${esc(i.title)}](${i.url}) — @${esc(i.author)} · ${ago(i.createdAt)}`)
         .join('\n')
-    : '_最近没有新增 issue_';
+    : `_${cfg.emptyRecent}_`;
 
   return `${START_MARK}
-## Issue 总览
+## ${cfg.title}
 
-扫描时间:${fmtDate(stats.scannedAt)} · 仓库 ${stats.total} 个 · open issue ${stats.openIssues} 个 · 本轮新增 **${stats.fresh}** 个
+扫描时间:${fmtDate(stats.scannedAt)} · 仓库 ${stats.total} 个 · ${cfg.openLabel} ${stats.openIssues} 个 · 本轮新增 **${stats.fresh}** 个
 
 ### 最近新增(近 ${NEW_TTL_DAYS} 天)
 
@@ -234,7 +266,7 @@ ${recentList}
 
 ### 各仓库状态
 
-| 仓库 | open | 最新 issue | 时间 |
+| 仓库 | open | ${cfg.itemHeader} | 时间 |
 |---|--:|---|---|
 ${rows.join('\n')}
 ${brokenLine}
@@ -263,17 +295,22 @@ async function main() {
   }
 
   // 只校验清单格式:不联网、不写文件、不需要 token
+  const cfg = TYPE_CONFIG[WATCH_TYPE] || TYPE_CONFIG.issues;
   if (CHECK_ONLY) {
-    log(`解析成功,共 ${repos.length} 个仓库:`);
-    for (const r of repos) log(`  ${r}  ->  https://github.com/${r}/issues`);
+    log(`解析成功,共 ${repos.length} 个仓库 (监控模式: ${WATCH_TYPE}):`);
+    for (const r of repos) log(`  ${r}  ->  https://github.com/${r}/${cfg.repoPath}`);
     return;
   }
 
   if (!TOKEN) log('! 未设置 GITHUB_TOKEN,走匿名请求(60 次/小时),仅够几十个仓库');
-  log(`仓库 ${repos.length} 个,并发 ${CONCURRENCY}`);
+  log(`仓库 ${repos.length} 个,并发 ${CONCURRENCY},监控模式: ${WATCH_TYPE}`);
 
-  const state = await readJson(STATE_FILE, { repos: {} });
-  const prevState = state.repos ?? {};
+  const state = await readJson(STATE_FILE, { watchType: WATCH_TYPE, repos: {} });
+  const watchTypeChanged = state.watchType && state.watchType !== WATCH_TYPE;
+  if (watchTypeChanged) {
+    log(`! WATCH_TYPE 改变 (${state.watchType} -> ${WATCH_TYPE}),重置 ETag 缓存以全量刷新`);
+  }
+  const prevState = watchTypeChanged ? {} : (state.repos ?? {});
 
   const results = await pool(repos, CONCURRENCY, (repo) => scanRepo(repo, prevState[repo]));
 
@@ -281,8 +318,8 @@ async function main() {
     (r.fresh ?? []).map((i) => ({ repo: r.repo, ...i, foundAt: nowIso() })),
   );
 
-  // 最近新增滚动列表:去重 + 过期清理
-  const prevRecent = await readJson('data/recent.json', []);
+  // 最近新增滚动列表:去重 + 过期清理 (若模式切换则丢弃旧模式的条目)
+  const prevRecent = watchTypeChanged ? [] : await readJson('data/recent.json', []);
   const cutoff = Date.now() - NEW_TTL_DAYS * DAY;
   const merged = new Map();
   for (const item of [...prevRecent, ...freshIssues]) {
@@ -295,6 +332,7 @@ async function main() {
   const openIssues = results.reduce((n, r) => n + (r.issues?.length ?? 0), 0);
   const stats = {
     scannedAt: nowIso(),
+    watchType: WATCH_TYPE,
     total: repos.length,
     openIssues,
     fresh: freshIssues.length,
@@ -302,7 +340,10 @@ async function main() {
   };
 
   // 1) 内部状态(etag + 水位线),不含时间戳,内容稳定才产生 diff
-  const nextState = { repos: {} };
+  const nextState = {
+    watchType: WATCH_TYPE,
+    repos: {},
+  };
   for (const r of results) {
     nextState.repos[r.repo] = {
       etag: r.etag ?? null,
@@ -315,12 +356,13 @@ async function main() {
 
   // 2) 对外快照(给静态页用)
   const publicPayload = {
+    watchType: WATCH_TYPE,
     generatedAt: stats.scannedAt,
     stats,
     repos: results
       .map((r) => ({
         repo: r.repo,
-        url: `https://github.com/${r.repo}/issues`,
+        url: `https://github.com/${r.repo}/${cfg.repoPath}`,
         reachable: r.reachable !== false,
         error: r.error ?? null,
         issues: r.issues ?? [],
@@ -335,6 +377,7 @@ async function main() {
     try {
       const prev = JSON.parse(prevPublicRaw);
       sameData =
+        prev.watchType === publicPayload.watchType &&
         JSON.stringify(prev.repos) === JSON.stringify(publicPayload.repos) &&
         JSON.stringify(prev.recent) === JSON.stringify(publicPayload.recent);
     } catch {
@@ -361,9 +404,9 @@ async function main() {
 
   // 4) 控制台摘要
   log('');
-  log(`仓库 ${stats.total} · open issue ${openIssues} · 本轮新增 ${freshIssues.length} · 失败 ${stats.unreachable}`);
+  log(`模式 [${WATCH_TYPE}] · 仓库 ${stats.total} · ${cfg.openLabel} ${openIssues} · 本轮新增 ${freshIssues.length} · 失败 ${stats.unreachable}`);
   log(`最近新增(近 ${NEW_TTL_DAYS} 天)共 ${recent.length} 条`);
-  for (const i of freshIssues) log(`  + ${i.repo}#${i.number}  ${i.title}`);
+  for (const i of freshIssues) log(`  + ${i.repo}#${i.number} ${i.isPr ? '[PR] ' : ''}${i.title}`);
   const remaining = results.map((r) => r.rateRemaining).filter(Boolean).pop();
   if (remaining) log(`API 剩余配额: ${remaining}`);
   if (stats.unreachable) process.exitCode = 0; // 单仓失败不阻断整体

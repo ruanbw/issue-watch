@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Issue Watch</title>
 <style>
-  :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;--accent:#58a6ff;--new:#3fb950}
-  @media (prefers-color-scheme:light){:root{--bg:#fff;--panel:#f6f8fa;--line:#d0d7de;--fg:#1f2328;--dim:#656d76;--accent:#0969da;--new:#1a7f37}}
+  :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;--accent:#58a6ff;--new:#3fb950;--pr:#a371f7}
+  @media (prefers-color-scheme:light){:root{--bg:#fff;--panel:#f6f8fa;--line:#d0d7de;--fg:#1f2328;--dim:#656d76;--accent:#0969da;--new:#1a7f37;--pr:#8250df}}
   *{box-sizing:border-box}
   body{margin:0;padding:24px;background:var(--bg);color:var(--fg);
        font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
@@ -33,6 +33,8 @@
   .when{flex:0 0 96px;text-align:right;color:var(--dim);font-size:12px}
   .badge{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
          border:1px solid var(--new);color:var(--new);margin-right:6px;vertical-align:1px}
+  .badge.pr{border-color:var(--pr);color:var(--pr)}
+  .badge.issue{border-color:var(--accent);color:var(--accent)}
   .label{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
          border:1px solid var(--line);color:var(--dim);margin-left:6px}
   .label.warn{border-color:#d29922;color:#d29922}
@@ -50,7 +52,7 @@
   <h2>最近新增</h2>
   <div id="recent"></div>
 
-  <h2>各仓库 open issues</h2>
+  <h2 id="list-title">各仓库 open issues</h2>
   <input type="search" id="filter" placeholder="筛选仓库或标题…">
   <div id="list"></div>
 </div>
@@ -79,38 +81,59 @@ let data = null;
 function render(d) {
   data = d;
   const s = d.stats || {};
+  const watchType = d.watchType || s.watchType || 'issues';
+  const typeCfg = {
+    issues: { openLabel: 'open issue', listTitle: '各仓库 open issues', emptyItem: '暂无 open issue', emptyRecent: '最近没有新增 issue' },
+    prs: { openLabel: 'open PR', listTitle: '各仓库 open PRs', emptyItem: '暂无 open PR', emptyRecent: '最近没有新增 PR' },
+    all: { openLabel: 'open 条目', listTitle: '各仓库 open issues & PRs', emptyItem: '暂无 open 条目', emptyRecent: '最近没有新增条目' },
+  }[watchType] || { openLabel: 'open issue', listTitle: '各仓库 open issues', emptyItem: '暂无 open issue', emptyRecent: '最近没有新增 issue' };
+
+  document.getElementById('list-title').textContent = typeCfg.listTitle;
+
   // 只在数据真的有变化时才刷新时间戳,所以这里说"数据更新于",并带上相对时间
   document.getElementById('meta').textContent = d.generatedAt
     ? '数据更新于 ' + ago(d.generatedAt) + '(' + fmt(d.generatedAt) + ') · 仓库 ' +
-      (s.total ?? '—') + ' 个 · 失败 ' + (s.unreachable ?? 0) + ' 个 · 定时检查中'
+      (s.total ?? '—') + ' 个 · 失败 ' + (s.unreachable ?? 0) + ' 个 · 模式 [' + watchType + '] · 定时检查中'
     : '尚未扫描 —— 在 Actions 里运行一次 issue-watch workflow,然后刷新本页';
 
   document.getElementById('stats').innerHTML = [
     ['仓库', s.total ?? 0],
-    ['open issue', s.openIssues ?? 0],
+    [typeCfg.openLabel, s.openIssues ?? 0],
     ['本轮新增', s.fresh ?? 0],
   ].map(([k, v]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
 
-  renderRecent(d.recent || []);
+  renderRecent(d.recent || [], watchType, typeCfg.emptyRecent);
   renderList();
   document.getElementById('filter').addEventListener('input', renderList);
 }
 
-function renderRecent(items) {
+function renderRecent(items, watchType, emptyText) {
   const el = document.getElementById('recent');
-  if (!items.length) { el.innerHTML = '<div class="empty">最近没有新增 issue</div>'; return; }
-  el.innerHTML = items.map(i => `
+  if (!items.length) { el.innerHTML = `<div class="empty">${esc(emptyText)}</div>`; return; }
+  el.innerHTML = items.map(i => {
+    const typeBadge = (watchType === 'all')
+      ? `<span class="badge ${i.isPr ? 'pr' : 'issue'}">${i.isPr ? 'PR' : 'Issue'}</span>`
+      : '';
+    return `
     <div class="row">
       <div class="repo"><span class="badge">NEW</span>
-        <a href="https://github.com/${esc(i.repo)}/issues" target="_blank" rel="noopener">${esc(i.repo)}</a></div>
-      <div class="iss"><a href="${esc(i.url)}" target="_blank" rel="noopener">#${i.number} ${esc(i.title)}</a></div>
+        <a href="https://github.com/${esc(i.repo)}/${i.isPr ? 'pulls' : 'issues'}" target="_blank" rel="noopener">${esc(i.repo)}</a></div>
+      <div class="iss"><a href="${esc(i.url)}" target="_blank" rel="noopener">${typeBadge}#${i.number} ${esc(i.title)}</a></div>
       <div class="when">${esc(ago(i.createdAt))}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderList() {
   const q = document.getElementById('filter').value.trim().toLowerCase();
   const all = data.repos || [];
+  const watchType = data.watchType || data.stats?.watchType || 'issues';
+  const typeCfg = {
+    issues: { emptyItem: '暂无 open issue' },
+    prs: { emptyItem: '暂无 open PR' },
+    all: { emptyItem: '暂无 open 条目' },
+  }[watchType] || { emptyItem: '暂无 open issue' };
+
   const repos = all.filter(r =>
     !q || r.repo.toLowerCase().includes(q) || (r.issues || []).some(i => i.title.toLowerCase().includes(q)));
   if (!all.length) {
@@ -126,10 +149,13 @@ function renderList() {
       return `<div class="row"><div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
         <div class="iss err">抓取失败:${esc(r.error || '未知错误')}</div><div class="when">—</div></div>`;
     }
+    const typeBadge = (watchType === 'all' && top)
+      ? `<span class="badge ${top.isPr ? 'pr' : 'issue'}">${top.isPr ? 'PR' : 'Issue'}</span>`
+      : '';
     const labels = (top?.labels || []).map(l => `<span class="label">${esc(l)}</span>`).join('');
     const issue = top
-      ? `<a href="${esc(top.url)}" target="_blank" rel="noopener">#${top.number} ${esc(top.title)}</a>`
-      : '<span class="empty">暂无 open issue</span>';
+      ? `<a href="${esc(top.url)}" target="_blank" rel="noopener">${typeBadge}#${top.number} ${esc(top.title)}</a>`
+      : `<span class="empty">${esc(typeCfg.emptyItem)}</span>`;
     const extra = top?.comments ? ` <span class="label">${top.comments} 💬</span>` : '';
     const staleTag = stale
       ? ` <span class="label warn" title="${esc(r.error || '')}">数据过期</span>`

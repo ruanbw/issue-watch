@@ -6,6 +6,17 @@ on:
     # GitHub cron 是 UTC,最小粒度 5 分钟,高峰期会延迟几分钟
     - cron: "*/15 * * * *"
   workflow_dispatch:
+    inputs:
+      watch_type:
+        description: "监控类型 (issues / prs / all)"
+        required: false
+        default: ""
+        type: choice
+        options:
+          - ""
+          - "issues"
+          - "prs"
+          - "all"
   push:
     branches: [main]
     paths:
@@ -37,8 +48,10 @@ jobs:
 
       - name: 扫描所有仓库
         env:
-          # 细粒度 PAT:勾选多个 resource owner,权限只需 Issues:Read + Metadata:Read
+          # 细粒度 PAT:勾选多个 resource owner,权限需 Issues:Read (+ Pull requests:Read 若监控 PR) + Metadata:Read
           GITHUB_TOKEN: ${{ secrets.ISSUE_WATCH_TOKEN }}
+          # 监控类型: issues (默认) | prs | all
+          WATCH_TYPE: ${{ github.event.inputs.watch_type || vars.WATCH_TYPE || 'issues' }}
         run: node scripts/scan.mjs
 
       - name: 提交数据(无变化则跳过)

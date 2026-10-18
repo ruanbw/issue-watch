@@ -88,7 +88,7 @@ node scripts/scan.mjs --check
 1. Settings → Developer settings → **Fine-grained tokens** → Generate new token
    - **Resource owner**:逐个添加,选上所有相关 org / 账号 ← 跨 owner 靠这一步
    - **Repository access**:All repositories,或手动挑要盯的仓库
-   - **Permissions**:`Issues: Read-only`、`Metadata: Read-only`
+   - **Permissions**:`Issues: Read-only`、`Metadata: Read-only`（若开启 PR 监控建议同时勾选 `Pull requests: Read-only`）
    - 有效期最长 1 年,到期重新生成
 2. 本仓库 Settings → Secrets and variables → Actions → New repository secret
    - Name:`ISSUE_WATCH_TOKEN`
@@ -111,12 +111,13 @@ gh workflow run issue-watch --repo <you>/<repo>
 
 ## 可调参数
 
-写在 `.github/workflows/issue-watch.yml` 的 `env:` 里即可:
+写在 `.github/workflows/issue-watch.yml` 的 `env:` 或仓库 Variables (`Settings` → `Secrets and variables` → `Actions` → `Variables`) 里即可:
 
 | 变量 | 默认 | 说明 |
 |---|---|---|
+| `WATCH_TYPE` | `issues` | 监控目标类型: `issues`(仅 Issue)、`prs`(仅 PR)、`all`(同时监听 Issue 和 PR) |
 | `CONCURRENCY` | 8 | 并发请求数,token 配额充裕可以调到 16 |
-| `PER_PAGE` | 10 | 每仓取多少个 open issue,只影响看板展示 |
+| `PER_PAGE` | 10 | 每仓取多少个 open issue / PR,只影响看板展示 |
 | `NEW_TTL_DAYS` | 7 | "最近新增"保留天数 |
 | `DRY_RUN` | — | 设 `1` 只打印不落盘,本地调试用 |
 
@@ -125,8 +126,10 @@ gh workflow run issue-watch --repo <you>/<repo>
 ## 本地调试
 
 ```bash
-GITHUB_TOKEN=$(gh auth token) node scripts/scan.mjs   # 抓一次
-python3 -m http.server 8000 --directory docs          # 预览看板
+GITHUB_TOKEN=$(gh auth token) node scripts/scan.mjs                  # 默认只抓 issue
+WATCH_TYPE=all GITHUB_TOKEN=$(gh auth token) node scripts/scan.mjs   # 同时抓 issue 和 PR
+WATCH_TYPE=prs GITHUB_TOKEN=$(gh auth token) node scripts/scan.mjs   # 只抓 PR
+python3 -m http.server 8000 --directory docs                         # 预览看板
 ```
 
 ## 边界与坑
