@@ -1,173 +1,2158 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Issue Watch</title>
+<title>Issue Watch · 跨仓库 GitHub 看板</title>
+<meta name="description" content="多仓库 GitHub Issue 与 Pull Request 实时监控与自动化汇总看板">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📡</text></svg>">
 <style>
-  :root{--bg:#0d1117;--panel:#161b22;--line:#30363d;--fg:#e6edf3;--dim:#8b949e;--accent:#58a6ff;--new:#3fb950;--pr:#a371f7}
-  @media (prefers-color-scheme:light){:root{--bg:#fff;--panel:#f6f8fa;--line:#d0d7de;--fg:#1f2328;--dim:#656d76;--accent:#0969da;--new:#1a7f37;--pr:#8250df}}
-  *{box-sizing:border-box}
-  body{margin:0;padding:24px;background:var(--bg);color:var(--fg);
-       font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif}
-  .wrap{max-width:1100px;margin:0 auto}
-  h1{font-size:20px;margin:0 0 4px}
-  .meta{color:var(--dim);font-size:12px;margin-bottom:20px}
-  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 16px}
-  .stat b{display:block;font-size:20px}
-  .stat span{color:var(--dim);font-size:12px}
-  h2{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);
-     margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
-  input[type=search]{width:100%;padding:8px 12px;margin-bottom:14px;border-radius:6px;
-       border:1px solid var(--line);background:var(--panel);color:var(--fg);font-size:14px}
-  .row{display:flex;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line)}
-  .row:last-child{border-bottom:0}
-  .repo{flex:0 0 210px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .repo a{color:var(--fg);text-decoration:none}
-  .repo a:hover{color:var(--accent)}
-  .iss{flex:1 1 auto;min-width:0}
-  .iss a{color:var(--fg);text-decoration:none;display:block;overflow:hidden;
-         text-overflow:ellipsis;white-space:nowrap}
-  .iss a:hover{color:var(--accent)}
-  .when{flex:0 0 96px;text-align:right;color:var(--dim);font-size:12px}
-  .badge{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
-         border:1px solid var(--new);color:var(--new);margin-right:6px;vertical-align:1px}
-  .badge.pr{border-color:var(--pr);color:var(--pr)}
-  .badge.issue{border-color:var(--accent);color:var(--accent)}
-  .label{display:inline-block;font-size:11px;padding:0 6px;border-radius:10px;
-         border:1px solid var(--line);color:var(--dim);margin-left:6px}
-  .label.warn{border-color:#d29922;color:#d29922}
-  .empty,.err{color:var(--dim);padding:10px 0}
-  .err{color:#d29922}
-  a{color:var(--accent)}
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  [data-theme="dark"] {
+    --bg-base: #090d16;
+    --bg-surface: #0f172a;
+    --bg-surface-elevated: #162035;
+    --bg-card: rgba(18, 26, 43, 0.75);
+    --bg-card-hover: rgba(28, 39, 64, 0.9);
+    --bg-subtle: rgba(255, 255, 255, 0.04);
+    --bg-subtle-hover: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.16);
+    --border-focus: rgba(56, 189, 248, 0.5);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #38bdf8;
+    --accent-bg: rgba(56, 189, 248, 0.12);
+    --accent-border: rgba(56, 189, 248, 0.25);
+    --issue: #22c55e;
+    --issue-bg: rgba(34, 197, 94, 0.12);
+    --issue-border: rgba(34, 197, 94, 0.25);
+    --pr: #c084fc;
+    --pr-bg: rgba(192, 132, 252, 0.12);
+    --pr-border: rgba(192, 132, 252, 0.25);
+    --warn: #fbbf24;
+    --warn-bg: rgba(251, 191, 36, 0.12);
+    --warn-border: rgba(251, 191, 36, 0.25);
+    --danger: #f87171;
+    --danger-bg: rgba(248, 113, 113, 0.12);
+    --danger-border: rgba(248, 113, 113, 0.25);
+    --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--border);
+    --shadow-card-hover: 0 12px 30px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px var(--border-hover);
+    --shadow-glow: 0 0 24px -4px rgba(56, 189, 248, 0.25);
+    --radial-glow: radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%);
+  }
+
+  [data-theme="light"] {
+    --bg-base: #f8fafc;
+    --bg-surface: #ffffff;
+    --bg-surface-elevated: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-card-hover: #f8fafc;
+    --bg-subtle: #f1f5f9;
+    --bg-subtle-hover: #e2e8f0;
+    --border: #e2e8f0;
+    --border-hover: #cbd5e1;
+    --border-focus: rgba(2, 132, 199, 0.5);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --accent: #0284c7;
+    --accent-bg: rgba(2, 132, 199, 0.08);
+    --accent-border: rgba(2, 132, 199, 0.2);
+    --issue: #16a34a;
+    --issue-bg: rgba(22, 163, 74, 0.08);
+    --issue-border: rgba(22, 163, 74, 0.2);
+    --pr: #9333ea;
+    --pr-bg: rgba(147, 51, 234, 0.08);
+    --pr-border: rgba(147, 51, 234, 0.2);
+    --warn: #d97706;
+    --warn-bg: rgba(217, 119, 6, 0.08);
+    --warn-border: rgba(217, 119, 6, 0.2);
+    --danger: #dc2626;
+    --danger-bg: rgba(220, 38, 38, 0.08);
+    --danger-border: rgba(220, 38, 38, 0.2);
+    --shadow-card: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 0 0 1px var(--border);
+    --shadow-card-hover: 0 10px 24px -4px rgba(15, 23, 42, 0.1), 0 0 0 1px var(--border-hover);
+    --shadow-glow: 0 0 24px -4px rgba(2, 132, 199, 0.15);
+    --radial-glow: radial-gradient(circle at 50% 0%, rgba(2, 132, 199, 0.06) 0%, transparent 60%);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--bg-base);
+    background-image: var(--radial-glow);
+    background-repeat: no-repeat;
+    background-size: 100% 600px;
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+    transition: var(--transition);
+  }
+
+  .app-container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
+
+  /* ---------------- Header ---------------- */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .brand-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-title h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  .badge-tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .badge-tag.mode {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+  }
+
+  .brand-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 2px;
+  }
+
+  .status-pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--issue);
+    position: relative;
+  }
+
+  .status-pulse-dot::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    background: var(--issue);
+    opacity: 0.4;
+    animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .status-pulse-dot.warn {
+    background: var(--warn);
+  }
+  .status-pulse-dot.warn::after {
+    background: var(--warn);
+  }
+
+  @keyframes ping {
+    75%, 100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .action-btn {
+    height: 36px;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .action-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-subtle-hover);
+    border-color: var(--border-hover);
+  }
+
+  .theme-toggle {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  /* ---------------- Metrics Dashboard ---------------- */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .metric-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--border-hover);
+  }
+
+  .metric-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+  }
+
+  .metric-icon-box.blue { background: var(--accent-bg); color: var(--accent); }
+  .metric-icon-box.green { background: var(--issue-bg); color: var(--issue); }
+  .metric-icon-box.purple { background: var(--pr-bg); color: var(--pr); }
+  .metric-icon-box.amber { background: var(--warn-bg); color: var(--warn); }
+  .metric-icon-box.red { background: var(--danger-bg); color: var(--danger); }
+
+  .metric-data {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    line-height: 1.1;
+    color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+
+  .metric-subtext {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+
+  .metric-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* ---------------- Section Titles ---------------- */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-badge {
+    background: var(--bg-subtle-hover);
+    color: var(--text-muted);
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+  }
+
+  /* ---------------- Recent Updates ---------------- */
+  .recent-section {
+    margin-bottom: 32px;
+  }
+
+  .recent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 12px;
+  }
+
+  .recent-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .recent-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--issue);
+  }
+
+  .recent-card.is-pr::before {
+    background: var(--pr);
+  }
+
+  .recent-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .recent-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .recent-repo-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .recent-repo-link:hover {
+    color: var(--accent);
+  }
+
+  .recent-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .recent-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .recent-card-title:hover {
+    color: var(--accent);
+  }
+
+  .recent-card-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .recent-author {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+  }
+
+  .empty-recent-banner {
+    background: var(--bg-surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  /* ---------------- Control Toolbar ---------------- */
+  .toolbar-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .toolbar-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 240px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+    display: grid;
+    place-items: center;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 40px;
+    padding: 0 76px 0 38px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+    transition: var(--transition);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--accent-bg);
+  }
+
+  .search-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .search-shortcut {
+    position: absolute;
+    right: 32px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    background: var(--bg-subtle-hover);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .search-clear:hover {
+    color: var(--text-primary);
+    background: var(--bg-subtle-hover);
+  }
+
+  .toolbar-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  .filter-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
+  }
+
+  .pill-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-subtle-hover);
+    border-color: var(--border-hover);
+  }
+
+  .pill-btn.active {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-color: var(--accent-border);
+    font-weight: 600;
+  }
+
+  .pill-count {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    background: var(--bg-subtle-hover);
+    color: inherit;
+    padding: 1px 6px;
+    border-radius: 999px;
+  }
+
+  .pill-btn.active .pill-count {
+    background: rgba(56, 189, 248, 0.2);
+  }
+
+  .controls-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .select-styled {
+    height: 32px;
+    padding: 0 28px 0 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background-color: var(--bg-base);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+  }
+
+  .select-styled:focus {
+    outline: none;
+    border-color: var(--border-focus);
+  }
+
+  .view-switch {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-base);
+  }
+
+  .view-btn {
+    width: 32px;
+    height: 30px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: var(--transition);
+  }
+
+  .view-btn:hover {
+    color: var(--text-primary);
+  }
+
+  .view-btn.active {
+    background: var(--bg-subtle-hover);
+    color: var(--accent);
+  }
+
+  /* ---------------- Repository Cards (Grid View) ---------------- */
+  .repos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+
+  .repo-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .repo-card:hover {
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .repo-card-header {
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-subtle);
+  }
+
+  .repo-identity {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .repo-owner {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .repo-name-link {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 1px;
+  }
+
+  .repo-name-link:hover {
+    color: var(--accent);
+  }
+
+  .repo-badges {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .repo-action-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--bg-base);
+    color: var(--text-muted);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .repo-action-icon:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+    background: var(--bg-subtle-hover);
+  }
+
+  .count-chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .count-chip.zero {
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .count-chip.has-items {
+    background: var(--warn-bg);
+    color: var(--warn);
+    border: 1px solid var(--warn-border);
+  }
+
+  .count-chip.error {
+    background: var(--danger-bg);
+    color: var(--danger);
+    border: 1px solid var(--danger-border);
+  }
+
+  .repo-card-body {
+    padding: 12px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .issue-item {
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    border: 1px solid transparent;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .issue-item:hover {
+    background: var(--bg-subtle-hover);
+    border-color: var(--border);
+  }
+
+  .issue-item-main {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .issue-number {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    flex-shrink: 0;
+  }
+
+  .issue-title-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    line-height: 1.4;
+    word-break: break-word;
+    flex: 1;
+  }
+
+  .issue-title-link:hover {
+    color: var(--accent);
+  }
+
+  .issue-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+
+  .issue-type-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+
+  .issue-type-tag.pr {
+    background: var(--pr-bg);
+    color: var(--pr);
+    border: 1px solid var(--pr-border);
+  }
+
+  .issue-type-tag.issue {
+    background: var(--issue-bg);
+    color: var(--issue);
+    border: 1px solid var(--issue-border);
+  }
+
+  .issue-labels {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .label-tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    background: var(--bg-base);
+  }
+
+  .issue-item-hidden {
+    display: none;
+  }
+
+  .show-more-btn {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-secondary);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .show-more-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+
+  .repo-empty-state {
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+  }
+
+  .repo-error-state {
+    padding: 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--danger);
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  /* ---------------- Table View ---------------- */
+  .repos-table-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow-x: auto;
+  }
+
+  .repos-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .repos-table th {
+    padding: 12px 16px;
+    background: var(--bg-surface-elevated);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .repos-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  .repos-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .repos-table tr:hover td {
+    background: var(--bg-subtle-hover);
+  }
+
+  /* ---------------- Global Empty State ---------------- */
+  .no-results-box {
+    padding: 64px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-xl);
+  }
+
+  .no-results-icon {
+    font-size: 36px;
+    margin-bottom: 4px;
+  }
+
+  .reset-search-btn {
+    margin-top: 8px;
+    padding: 6px 16px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ---------------- Toast Notification ---------------- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg-surface-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-hover);
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: var(--transition);
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* ---------------- Footer ---------------- */
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .footer-links a:hover {
+    color: var(--text-primary);
+  }
+
+  @media (max-width: 640px) {
+    .app-container { padding: 16px 12px 60px; }
+    header { flex-direction: column; align-items: stretch; }
+    .header-actions { justify-content: space-between; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .repos-grid { grid-template-columns: 1fr; }
+    .toolbar-secondary { flex-direction: column; align-items: stretch; }
+    .controls-group { justify-content: space-between; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Issue Watch</h1>
-  <div class="meta" id="meta">加载中…</div>
-  <div class="stats" id="stats"></div>
 
-  <h2>最近新增</h2>
-  <div id="recent"></div>
+<div class="app-container">
+  <!-- Top Navigation & Branding -->
+  <header>
+    <div class="brand">
+      <div class="logo-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="2"/>
+          <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/>
+          <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19"/>
+          <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/>
+          <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-title">
+          <h1>Issue Watch</h1>
+          <span class="badge-tag mode" id="badge-watch-mode">ISSUES</span>
+        </div>
+        <div class="brand-subtitle">
+          <span class="status-pulse">
+            <span class="status-pulse-dot" id="system-status-dot"></span>
+            <span id="system-status-text">正在连接数据源…</span>
+          </span>
+          <span>·</span>
+          <span id="last-updated-text" title="">检查更新中</span>
+        </div>
+      </div>
+    </div>
 
-  <h2 id="list-title">各仓库 open issues</h2>
-  <input type="search" id="filter" placeholder="筛选仓库或标题…">
-  <div id="list"></div>
+    <div class="header-actions">
+      <button class="action-btn" id="refresh-btn" title="重新从本地或服务端拉取数据">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+          <path d="M21 3v5h-5"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+          <path d="M8 16H3v5"/>
+        </svg>
+        <span>刷新</span>
+      </button>
+
+      <button class="action-btn theme-toggle" id="theme-toggle" title="切换深浅颜色主题" aria-label="切换深浅主题">
+        <svg id="theme-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+
+      <a href="https://github.com/ruanbw/issue-watch" target="_blank" rel="noopener" class="action-btn" title="查看 GitHub 仓库">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Metrics Dashboard (KPI Cards) -->
+  <section class="metrics-grid" id="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon-box blue">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div class="metric-data">
+        <div class="metric-value" id="stat-total-repos">—</div>
+        <div class="metric-label">监控仓库总数</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-box amber" id="metric-issues-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="metric-data">
+        <div class="metric-value" id="stat-open-issues">—</div>
+        <div class="metric-label" id="stat-open-label">待处理 Open Issues</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-box purple">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div class="metric-data">
+        <div class="metric-value" id="stat-fresh-issues">—</div>
+        <div class="metric-label">本轮新增条目</div>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon-box green" id="metric-health-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="metric-data">
+        <div class="metric-value" id="stat-health-rate">—</div>
+        <div class="metric-label">服务连通率</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Fresh Arrivals Section -->
+  <section class="recent-section">
+    <div class="section-header">
+      <div class="section-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>最近新增动态</span>
+        <span class="section-badge" id="recent-count-badge">0</span>
+      </div>
+    </div>
+    <div id="recent-container">
+      <div class="empty-recent-banner">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <span>近 7 天没有新增条目，全线稳定无积压</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Control Toolbar -->
+  <section class="toolbar-container">
+    <div class="toolbar-main">
+      <div class="search-box">
+        <div class="search-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <input type="search" id="search-input" class="search-input" placeholder="按仓库、标题、组织或标签搜索…" autocomplete="off">
+        <span class="search-shortcut">/</span>
+        <button class="search-clear" id="search-clear-btn" style="display:none;" title="清空搜索">✕</button>
+      </div>
+    </div>
+
+    <div class="toolbar-secondary">
+      <div class="filter-pills" id="filter-pills">
+        <button class="pill-btn active" data-filter="all">
+          <span>全部仓库</span>
+          <span class="pill-count" id="pill-count-all">0</span>
+        </button>
+        <button class="pill-btn" data-filter="has-issues">
+          <span>需关注</span>
+          <span class="pill-count" id="pill-count-has">0</span>
+        </button>
+        <button class="pill-btn" data-filter="clean">
+          <span>无积压</span>
+          <span class="pill-count" id="pill-count-clean">0</span>
+        </button>
+        <button class="pill-btn" data-filter="unreachable" id="pill-btn-error" style="display:none;">
+          <span>抓取异常</span>
+          <span class="pill-count" id="pill-count-error">0</span>
+        </button>
+      </div>
+
+      <div class="controls-group">
+        <select class="select-styled" id="owner-select" title="按组织 / Owner 筛选">
+          <option value="all">所有组织 (All Owners)</option>
+        </select>
+
+        <select class="select-styled" id="sort-select" title="列表排序规则">
+          <option value="active">按最近活跃排序</option>
+          <option value="issues-desc">按待办数量降序</option>
+          <option value="name-asc">按仓库名称 A-Z</option>
+        </select>
+
+        <div class="view-switch" role="group" aria-label="视图模式切换">
+          <button class="view-btn active" id="view-grid-btn" title="网格卡片视图">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </button>
+          <button class="view-btn" id="view-table-btn" title="紧凑表格视图">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Repos Display Container -->
+  <main id="main-content">
+    <div class="repos-grid" id="repos-container"></div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div id="footer-meta">数据自动同步中 · 零外部重型依赖</div>
+    <div class="footer-links">
+      <a href="https://github.com/ruanbw/issue-watch/blob/main/repos.txt" target="_blank" rel="noopener">管理监控清单 (repos.txt)</a>
+      <span>·</span>
+      <a href="https://github.com/ruanbw/issue-watch/actions" target="_blank" rel="noopener">Actions 运行记录</a>
+    </div>
+  </footer>
+</div>
+
+<!-- Toast Popup -->
+<div class="toast" id="toast">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--issue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+  <span id="toast-text">已复制到剪贴板</span>
 </div>
 
 <script>
-const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const ago = iso => {
-  const d = Date.now() - Date.parse(iso);
-  if (!Number.isFinite(d)) return '—';
-  const h = Math.floor(d / 36e5);
-  if (h < 1) return Math.max(1, Math.floor(d / 6e4)) + ' 分钟前';
-  if (h < 24) return h + ' 小时前';
-  return Math.floor(h / 24) + ' 天前';
-};
-const fmt = iso => iso ? iso.replace('T', ' ').slice(0, 16) + ' UTC' : '—';
+/**
+ * Issue Watch 现代看板交互系统
+ * 纯原生驱动，零外部 CDN，加载迅速，响应式交互
+ */
+(function() {
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
 
-fetch('data.json', { cache: 'no-store' })
-  .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-  .then(render)
-  .catch(e => {
-    document.getElementById('meta').textContent = '加载 data.json 失败:' + e.message;
-  });
+  const ago = iso => {
+    if (!iso) return '—';
+    const d = Date.now() - Date.parse(iso);
+    if (!Number.isFinite(d)) return '—';
+    const m = Math.floor(d / 60000);
+    if (m < 1) return '刚刚';
+    if (m < 60) return m + ' 分钟前';
+    const h = Math.floor(d / 36e5);
+    if (h < 24) return h + ' 小时前';
+    const days = Math.floor(d / 864e5);
+    if (days < 30) return days + ' 天前';
+    return Math.floor(days / 30) + ' 个月前';
+  };
 
-let data = null;
+  const fmtUtc = iso => iso ? iso.replace('T', ' ').slice(0, 16) + ' UTC' : '—';
 
-function render(d) {
-  data = d;
-  const s = d.stats || {};
-  const watchType = d.watchType || s.watchType || 'issues';
-  const typeCfg = {
-    issues: { openLabel: 'open issue', listTitle: '各仓库 open issues', emptyItem: '暂无 open issue', emptyRecent: '最近没有新增 issue' },
-    prs: { openLabel: 'open PR', listTitle: '各仓库 open PRs', emptyItem: '暂无 open PR', emptyRecent: '最近没有新增 PR' },
-    all: { openLabel: 'open 条目', listTitle: '各仓库 open issues & PRs', emptyItem: '暂无 open 条目', emptyRecent: '最近没有新增条目' },
-  }[watchType] || { openLabel: 'open issue', listTitle: '各仓库 open issues', emptyItem: '暂无 open issue', emptyRecent: '最近没有新增 issue' };
+  // State Management
+  let rawData = null;
+  let activeFilter = 'all'; // all | has-issues | clean | unreachable
+  let activeOwner = 'all';
+  let activeSort = 'active'; // active | issues-desc | name-asc
+  let activeView = localStorage.getItem('iw_view_mode') || 'grid';
+  let searchQuery = '';
 
-  document.getElementById('list-title').textContent = typeCfg.listTitle;
+  // DOM Elements
+  const themeToggle = document.getElementById('theme-toggle');
+  const searchInput = document.getElementById('search-input');
+  const searchClearBtn = document.getElementById('search-clear-btn');
+  const refreshBtn = document.getElementById('refresh-btn');
+  const ownerSelect = document.getElementById('owner-select');
+  const sortSelect = document.getElementById('sort-select');
+  const viewGridBtn = document.getElementById('view-grid-btn');
+  const viewTableBtn = document.getElementById('view-table-btn');
+  const filterPills = document.getElementById('filter-pills');
+  const toast = document.getElementById('toast');
+  const toastText = document.getElementById('toast-text');
 
-  // 只在数据真的有变化时才刷新时间戳,所以这里说"数据更新于",并带上相对时间
-  document.getElementById('meta').textContent = d.generatedAt
-    ? '数据更新于 ' + ago(d.generatedAt) + '(' + fmt(d.generatedAt) + ') · 仓库 ' +
-      (s.total ?? '—') + ' 个 · 失败 ' + (s.unreachable ?? 0) + ' 个 · 模式 [' + watchType + '] · 定时检查中'
-    : '尚未扫描 —— 在 Actions 里运行一次 issue-watch workflow,然后刷新本页';
-
-  document.getElementById('stats').innerHTML = [
-    ['仓库', s.total ?? 0],
-    [typeCfg.openLabel, s.openIssues ?? 0],
-    ['本轮新增', s.fresh ?? 0],
-  ].map(([k, v]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join('');
-
-  renderRecent(d.recent || [], watchType, typeCfg.emptyRecent);
-  renderList();
-  document.getElementById('filter').addEventListener('input', renderList);
-}
-
-function renderRecent(items, watchType, emptyText) {
-  const el = document.getElementById('recent');
-  if (!items.length) { el.innerHTML = `<div class="empty">${esc(emptyText)}</div>`; return; }
-  el.innerHTML = items.map(i => {
-    const typeBadge = (watchType === 'all')
-      ? `<span class="badge ${i.isPr ? 'pr' : 'issue'}">${i.isPr ? 'PR' : 'Issue'}</span>`
-      : '';
-    return `
-    <div class="row">
-      <div class="repo"><span class="badge">NEW</span>
-        <a href="https://github.com/${esc(i.repo)}/${i.isPr ? 'pulls' : 'issues'}" target="_blank" rel="noopener">${esc(i.repo)}</a></div>
-      <div class="iss"><a href="${esc(i.url)}" target="_blank" rel="noopener">${typeBadge}#${i.number} ${esc(i.title)}</a></div>
-      <div class="when">${esc(ago(i.createdAt))}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderList() {
-  const q = document.getElementById('filter').value.trim().toLowerCase();
-  const all = data.repos || [];
-  const watchType = data.watchType || data.stats?.watchType || 'issues';
-  const typeCfg = {
-    issues: { emptyItem: '暂无 open issue' },
-    prs: { emptyItem: '暂无 open PR' },
-    all: { emptyItem: '暂无 open 条目' },
-  }[watchType] || { emptyItem: '暂无 open issue' };
-
-  const repos = all.filter(r =>
-    !q || r.repo.toLowerCase().includes(q) || (r.issues || []).some(i => i.title.toLowerCase().includes(q)));
-  if (!all.length) {
-    document.getElementById('list').innerHTML =
-      '<div class="empty">还没有数据 —— 在 Actions 里运行一次 issue-watch workflow,然后刷新本页。</div>';
-    return;
+  // Theme Management
+  function initTheme() {
+    const saved = localStorage.getItem('iw_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const currentTheme = saved || (prefersDark ? 'dark' : 'light');
+    setTheme(currentTheme, false);
   }
-  const out = repos.map(r => {
-    const top = (r.issues || [])[0];
-    const stale = r.reachable === false;
-    // 抓取失败但手上还有上一轮数据:照常显示,只打一个"数据过期"角标
-    if (stale && !top) {
-      return `<div class="row"><div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
-        <div class="iss err">抓取失败:${esc(r.error || '未知错误')}</div><div class="when">—</div></div>`;
-    }
-    const typeBadge = (watchType === 'all' && top)
-      ? `<span class="badge ${top.isPr ? 'pr' : 'issue'}">${top.isPr ? 'PR' : 'Issue'}</span>`
-      : '';
-    const labels = (top?.labels || []).map(l => `<span class="label">${esc(l)}</span>`).join('');
-    const issue = top
-      ? `<a href="${esc(top.url)}" target="_blank" rel="noopener">${typeBadge}#${top.number} ${esc(top.title)}</a>`
-      : `<span class="empty">${esc(typeCfg.emptyItem)}</span>`;
-    const extra = top?.comments ? ` <span class="label">${top.comments} 💬</span>` : '';
-    const staleTag = stale
-      ? ` <span class="label warn" title="${esc(r.error || '')}">数据过期</span>`
-      : '';
-    return `<div class="row">
-      <div class="repo"><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.repo)}</a></div>
-      <div class="iss">${issue}${labels}${extra}${staleTag}</div>
-      <div class="when">${esc(ago(top?.createdAt))}</div>
-    </div>`;
+
+  function setTheme(theme, save = true) {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (save) localStorage.setItem('iw_theme', theme);
+    const isDark = theme === 'dark';
+    themeToggle.innerHTML = isDark
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+           <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+         </svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+         </svg>`;
+  }
+
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    setTheme(isDark ? 'light' : 'dark');
   });
-  document.getElementById('list').innerHTML = out.length ? out.join('') : '<div class="empty">没有匹配的仓库</div>';
-}
+
+  // Toast Functionality
+  let toastTimer = null;
+  function showToast(msg) {
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2200);
+  }
+
+  window.copyText = function(text, event) {
+    if (event) event.stopPropagation();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制: ' + text);
+      }).catch(() => fallbackCopy(text));
+    } else {
+      fallbackCopy(text);
+    }
+  };
+
+  window.toggleMoreIssues = function(btn) {
+    const card = btn.closest('.repo-card');
+    const hiddens = card.querySelectorAll('.issue-item-hidden');
+    const isExpanded = btn.dataset.expanded === 'true';
+    if (isExpanded) {
+      hiddens.forEach(el => el.style.display = 'none');
+      btn.dataset.expanded = 'false';
+      btn.innerHTML = `<span>展开剩余 ${hiddens.length} 条待办</span> ▾`;
+    } else {
+      hiddens.forEach(el => el.style.display = 'flex');
+      btn.dataset.expanded = 'true';
+      btn.innerHTML = `<span>收起待办</span> ▴`;
+    }
+  };
+
+  const SAMPLE_DATA = {
+    generatedAt: new Date().toISOString(),
+    watchType: "all",
+    stats: {
+      scannedAt: new Date().toISOString(),
+      watchType: "all",
+      total: 15,
+      openIssues: 5,
+      fresh: 2,
+      unreachable: 1
+    },
+    recent: [
+      {
+        repo: "ruanbw/bennett-agent",
+        number: 42,
+        title: "feat(eval): 引入 AST 静态护栏与 DuckDB 内存沙箱对比机制",
+        url: "https://github.com/ruanbw/bennett-agent/issues/42",
+        isPr: false,
+        author: "ruanbw",
+        createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+        comments: 4,
+        labels: ["enhancement", "eval"]
+      },
+      {
+        repo: "ruanbw/janus",
+        number: 18,
+        title: "fix(tenant): 修复跨租户并发状态合并时的 ETag 竞争风险",
+        url: "https://github.com/ruanbw/janus/pull/18",
+        isPr: true,
+        author: "developer-bob",
+        createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
+        comments: 2,
+        labels: ["bug", "concurrency"]
+      }
+    ],
+    repos: [
+      {
+        repo: "ruanbw/bennett-agent",
+        url: "https://github.com/ruanbw/bennett-agent/issues",
+        reachable: true,
+        error: null,
+        issues: [
+          {
+            number: 42,
+            title: "feat(eval): 引入 AST 静态护栏与 DuckDB 内存沙箱对比机制",
+            url: "https://github.com/ruanbw/bennett-agent/issues/42",
+            isPr: false,
+            author: "ruanbw",
+            createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
+            comments: 4,
+            labels: ["enhancement", "eval"]
+          },
+          {
+            number: 39,
+            title: "refactor: 重构 LiteLLM 网关连接池并增加重试退避",
+            url: "https://github.com/ruanbw/bennett-agent/issues/39",
+            isPr: false,
+            author: "ruanbw",
+            createdAt: new Date(Date.now() - 3600000 * 28).toISOString(),
+            comments: 1,
+            labels: ["refactor"]
+          },
+          {
+            number: 37,
+            title: "docs: 完善 CONTRACTS.md 数据类契约文档",
+            url: "https://github.com/ruanbw/bennett-agent/issues/37",
+            isPr: false,
+            author: "ruanbw",
+            createdAt: new Date(Date.now() - 3600000 * 72).toISOString(),
+            comments: 0,
+            labels: ["documentation"]
+          },
+          {
+            number: 35,
+            title: "test: 增加并发环境下的单元测试用例集",
+            url: "https://github.com/ruanbw/bennett-agent/issues/35",
+            isPr: false,
+            author: "ruanbw",
+            createdAt: new Date(Date.now() - 3600000 * 96).toISOString(),
+            comments: 3,
+            labels: ["testing"]
+          }
+        ]
+      },
+      {
+        repo: "ruanbw/janus",
+        url: "https://github.com/ruanbw/janus/issues",
+        reachable: true,
+        error: null,
+        issues: [
+          {
+            number: 18,
+            title: "fix(tenant): 修复跨租户并发状态合并时的 ETag 竞争风险",
+            url: "https://github.com/ruanbw/janus/pull/18",
+            isPr: true,
+            author: "developer-bob",
+            createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
+            comments: 2,
+            labels: ["bug", "concurrency"]
+          }
+        ]
+      },
+      {
+        repo: "bennett-dsh/dsh-plugin-usage",
+        url: "https://github.com/bennett-dsh/dsh-plugin-usage/issues",
+        reachable: false,
+        error: "404 Not Found (Repository moved or private)",
+        issues: []
+      },
+      {
+        repo: "ruanbw/agent-sweep",
+        url: "https://github.com/ruanbw/agent-sweep/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/bennett",
+        url: "https://github.com/ruanbw/bennett/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/CertFlow",
+        url: "https://github.com/ruanbw/CertFlow/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/DefaultAppManager",
+        url: "https://github.com/ruanbw/DefaultAppManager/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/git",
+        url: "https://github.com/ruanbw/git/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/logo-animated-svg",
+        url: "https://github.com/ruanbw/logo-animated-svg/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/mosaic-model-studio",
+        url: "https://github.com/ruanbw/mosaic-model-studio/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/nodem-clean",
+        url: "https://github.com/ruanbw/nodem-clean/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/pi-deepseek-cache",
+        url: "https://github.com/ruanbw/pi-deepseek-cache/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      },
+      {
+        repo: "ruanbw/provenance-check",
+        url: "https://github.com/ruanbw/provenance-check/issues",
+        reachable: true,
+        error: null,
+        issues: []
+      }
+    ]
+  };
+
+  window.loadSampleData = function() {
+    rawData = SAMPLE_DATA;
+    renderDashboard(SAMPLE_DATA);
+    showToast('已加载演示数据');
+    const subtitle = document.querySelector('.brand-subtitle');
+    if (subtitle && !document.getElementById('demo-mode-chip')) {
+      const chip = document.createElement('span');
+      chip.id = 'demo-mode-chip';
+      chip.className = 'badge-tag';
+      chip.style.background = 'var(--warn-bg)';
+      chip.style.color = 'var(--warn)';
+      chip.style.border = '1px solid var(--warn-border)';
+      chip.textContent = 'DEMO 演示模式';
+      subtitle.appendChild(chip);
+    }
+  };
+
+  // Data Loading
+  function loadData() {
+    const statusText = document.getElementById('system-status-text');
+    statusText.textContent = '正在获取监控快照…';
+
+    fetch('data.json', { cache: 'no-store' })
+      .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(data => {
+        rawData = data;
+        renderDashboard(data);
+      })
+      .catch(err => {
+        console.error('加载 data.json 失败:', err);
+        statusText.textContent = '数据加载失败 (' + err.message + ')';
+        document.getElementById('system-status-dot').classList.add('warn');
+        renderErrorState(err);
+      });
+  }
+
+  function renderDashboard(data) {
+    const stats = data.stats || {};
+    const watchType = data.watchType || stats.watchType || 'issues';
+
+    // Update Mode Badge
+    const modeBadge = document.getElementById('badge-watch-mode');
+    const modeMap = { issues: 'ISSUES', prs: 'PRS', all: 'ALL ITEMS' };
+    modeBadge.textContent = modeMap[watchType] || 'ISSUES';
+
+    // Update Header Status
+    const totalRepos = stats.total ?? (data.repos ? data.repos.length : 0);
+    const unreach = stats.unreachable ?? 0;
+    const dot = document.getElementById('system-status-dot');
+    const statusText = document.getElementById('system-status-text');
+
+    if (unreach > 0) {
+      dot.className = 'status-pulse-dot warn';
+      statusText.textContent = `${totalRepos} 个仓库 · ${unreach} 个连接异常`;
+    } else {
+      dot.className = 'status-pulse-dot';
+      statusText.textContent = `${totalRepos} 个仓库已同步 · 全部健康`;
+    }
+
+    const lastUpdated = document.getElementById('last-updated-text');
+    if (data.generatedAt) {
+      lastUpdated.textContent = '更新于 ' + ago(data.generatedAt);
+      lastUpdated.title = '精确时间: ' + fmtUtc(data.generatedAt);
+    } else {
+      lastUpdated.textContent = '尚未完成首次扫描';
+    }
+
+    // Populate Metrics
+    document.getElementById('stat-total-repos').textContent = totalRepos;
+    const openCount = stats.openIssues ?? 0;
+    const openEl = document.getElementById('stat-open-issues');
+    openEl.textContent = openCount;
+
+    const labelMap = { issues: '待处理 Open Issues', prs: '待处理 Open PRs', all: '待处理 Open 条目' };
+    document.getElementById('stat-open-label').textContent = labelMap[watchType] || '待处理 Open 条目';
+
+    const freshCount = stats.fresh ?? 0;
+    document.getElementById('stat-fresh-issues').textContent = freshCount;
+
+    const healthRate = totalRepos > 0 ? Math.round(((totalRepos - unreach) / totalRepos) * 100) : 100;
+    document.getElementById('stat-health-rate').textContent = healthRate + '%';
+
+    // Populate Owners in select
+    populateOwners(data.repos || []);
+
+    // Render Recent
+    renderRecent(data.recent || [], watchType);
+
+    // Update Filter counts
+    updateFilterCounts(data.repos || []);
+
+    // Render Main List
+    renderReposList();
+  }
+
+  function populateOwners(repos) {
+    const owners = new Set();
+    repos.forEach(r => {
+      const parts = r.repo.split('/');
+      if (parts.length > 0) owners.add(parts[0]);
+    });
+
+    const current = ownerSelect.value;
+    ownerSelect.innerHTML = '<option value="all">所有组织 (All Owners)</option>' +
+      Array.from(owners).sort().map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+
+    if (owners.has(current)) {
+      ownerSelect.value = current;
+    }
+  }
+
+  function updateFilterCounts(repos) {
+    const all = repos.length;
+    const has = repos.filter(r => (r.issues || []).length > 0).length;
+    const clean = repos.filter(r => (r.issues || []).length === 0 && r.reachable !== false).length;
+    const unreach = repos.filter(r => r.reachable === false).length;
+
+    document.getElementById('pill-count-all').textContent = all;
+    document.getElementById('pill-count-has').textContent = has;
+    document.getElementById('pill-count-clean').textContent = clean;
+
+    const errBtn = document.getElementById('pill-btn-error');
+    if (unreach > 0) {
+      errBtn.style.display = 'inline-flex';
+      document.getElementById('pill-count-error').textContent = unreach;
+    } else {
+      errBtn.style.display = 'none';
+    }
+  }
+
+  function renderRecent(recent, watchType) {
+    const container = document.getElementById('recent-container');
+    const badge = document.getElementById('recent-count-badge');
+    badge.textContent = recent.length;
+
+    if (!recent.length) {
+      container.innerHTML = `
+        <div class="empty-recent-banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+          <span>近 7 天没有新增条目，所有监控仓库运转平稳</span>
+        </div>`;
+      return;
+    }
+
+    const items = recent.slice(0, 6).map(item => {
+      const isPr = Boolean(item.isPr);
+      const tagClass = isPr ? 'is-pr' : '';
+      const typeTag = (watchType === 'all' || isPr)
+        ? `<span class="badge-tag ${isPr ? 'mode' : 'mode'}">${isPr ? 'PR' : 'Issue'}</span>`
+        : '';
+      const comments = item.comments > 0 ? `<span>💬 ${item.comments}</span>` : '';
+      const labels = (item.labels || []).slice(0, 2).map(l => `<span class="label-tag">${esc(l)}</span>`).join('');
+
+      return `
+        <div class="recent-card ${tagClass}">
+          <div class="recent-card-top">
+            <a class="recent-repo-link" href="https://github.com/${esc(item.repo)}" target="_blank" rel="noopener">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              <span>${esc(item.repo)}</span>
+            </a>
+            <span class="recent-time" title="${esc(fmtUtc(item.createdAt))}">${esc(ago(item.createdAt))}</span>
+          </div>
+          <a class="recent-card-title" href="${esc(item.url)}" target="_blank" rel="noopener">
+            #${item.number} ${esc(item.title)}
+          </a>
+          <div class="recent-card-footer">
+            <span class="recent-author">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              @${esc(item.author || 'ghost')}
+            </span>
+            ${comments}
+            ${labels}
+          </div>
+        </div>`;
+    }).join('');
+
+    container.innerHTML = `<div class="recent-grid">${items}</div>`;
+  }
+
+  // Filter & Sort Logic
+  function getFilteredRepos() {
+    if (!rawData || !rawData.repos) return [];
+    let repos = [...rawData.repos];
+
+    // Filter by Owner
+    if (activeOwner !== 'all') {
+      repos = repos.filter(r => r.repo.startsWith(activeOwner + '/'));
+    }
+
+    // Filter by Pill
+    if (activeFilter === 'has-issues') {
+      repos = repos.filter(r => (r.issues || []).length > 0);
+    } else if (activeFilter === 'clean') {
+      repos = repos.filter(r => (r.issues || []).length === 0 && r.reachable !== false);
+    } else if (activeFilter === 'unreachable') {
+      repos = repos.filter(r => r.reachable === false);
+    }
+
+    // Filter by Search Query
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      repos = repos.filter(r => {
+        if (r.repo.toLowerCase().includes(q)) return true;
+        return (r.issues || []).some(i =>
+          String(i.number).includes(q) ||
+          (i.title && i.title.toLowerCase().includes(q)) ||
+          (i.author && i.author.toLowerCase().includes(q)) ||
+          (i.labels && i.labels.some(l => l.toLowerCase().includes(q)))
+        );
+      });
+    }
+
+    // Sort
+    if (activeSort === 'active') {
+      repos.sort((a, b) => {
+        const da = a.issues?.[0]?.createdAt ?? '';
+        const db = b.issues?.[0]?.createdAt ?? '';
+        if (da && db) return db.localeCompare(da);
+        if (da) return -1;
+        if (db) return 1;
+        return a.repo.localeCompare(b.repo);
+      });
+    } else if (activeSort === 'issues-desc') {
+      repos.sort((a, b) => {
+        const diff = (b.issues?.length || 0) - (a.issues?.length || 0);
+        return diff !== 0 ? diff : a.repo.localeCompare(b.repo);
+      });
+    } else if (activeSort === 'name-asc') {
+      repos.sort((a, b) => a.repo.localeCompare(b.repo));
+    }
+
+    return repos;
+  }
+
+  function renderReposList() {
+    const repos = getFilteredRepos();
+    const container = document.getElementById('repos-container');
+    const watchType = rawData?.watchType || 'issues';
+
+    if (!repos.length) {
+      container.className = '';
+      container.innerHTML = `
+        <div class="no-results-box">
+          <div class="no-results-icon">🔍</div>
+          <h3>未找到匹配的仓库</h3>
+          <p>请尝试调整搜索关键词或切换上方的筛选分类</p>
+          ${searchQuery ? `<button class="reset-search-btn" id="reset-filter-btn">清空搜索条件</button>` : ''}
+        </div>`;
+      const btn = document.getElementById('reset-filter-btn');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          searchInput.value = '';
+          searchQuery = '';
+          searchClearBtn.style.display = 'none';
+          activeFilter = 'all';
+          updatePillStyles();
+          renderReposList();
+        });
+      }
+      return;
+    }
+
+    if (activeView === 'grid') {
+      container.className = 'repos-grid';
+      container.innerHTML = repos.map(r => renderRepoCard(r, watchType)).join('');
+    } else {
+      container.className = 'repos-table-container';
+      container.innerHTML = renderTableView(repos, watchType);
+    }
+  }
+
+  function renderRepoCard(r, watchType) {
+    const [owner, name] = r.repo.split('/');
+    const issues = r.issues || [];
+    const count = issues.length;
+    const isError = r.reachable === false;
+
+    let chipClass = 'count-chip zero';
+    let chipText = '0 待办';
+    if (isError) {
+      chipClass = 'count-chip error';
+      chipText = '同步异常';
+    } else if (count > 0) {
+      chipClass = 'count-chip has-items';
+      chipText = `${count} ${watchType === 'prs' ? 'PR' : 'Issue'}`;
+    }
+
+    let bodyContent = '';
+    if (isError && !issues.length) {
+      bodyContent = `
+        <div class="repo-error-state">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px;">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <div>
+            <strong>抓取失败:</strong> ${esc(r.error || '无法连接该仓库')}
+          </div>
+        </div>`;
+    } else if (count === 0) {
+      bodyContent = `
+        <div class="repo-empty-state">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <span>暂无打开的 ${watchType === 'prs' ? 'PR' : 'Issue'} · 状态良好</span>
+        </div>`;
+    } else {
+      const maxInitial = 3;
+      const itemsHtml = issues.map((i, idx) => {
+        const isPr = Boolean(i.isPr);
+        const typeBadge = (watchType === 'all')
+          ? `<span class="issue-type-tag ${isPr ? 'pr' : 'issue'}">${isPr ? 'PR' : 'Issue'}</span>`
+          : '';
+        const comments = i.comments > 0 ? `<span>💬 ${i.comments}</span>` : '';
+        const labels = (i.labels || []).map(l => `<span class="label-tag">${esc(l)}</span>`).join('');
+        const isHidden = idx >= maxInitial;
+        const hiddenClass = isHidden ? 'issue-item-hidden' : '';
+
+        return `
+          <div class="issue-item ${hiddenClass}">
+            <div class="issue-item-main">
+              <span class="issue-number">#${i.number}</span>
+              <a class="issue-title-link" href="${esc(i.url)}" target="_blank" rel="noopener">
+                ${esc(i.title)}
+              </a>
+            </div>
+            <div class="issue-meta">
+              ${typeBadge}
+              <span>@${esc(i.author || 'ghost')}</span>
+              <span>·</span>
+              <span title="${esc(fmtUtc(i.createdAt))}">${esc(ago(i.createdAt))}</span>
+              ${comments}
+              <div class="issue-labels">${labels}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      const moreBtn = issues.length > maxInitial
+        ? `<button class="show-more-btn" onclick="toggleMoreIssues(this)" data-expanded="false">
+             <span>展开剩余 ${issues.length - maxInitial} 条待办</span> ▾
+           </button>`
+        : '';
+
+      bodyContent = `<div class="issues-list">${itemsHtml}</div>${moreBtn}`;
+    }
+
+    return `
+      <div class="repo-card" data-repo="${esc(r.repo)}">
+        <div class="repo-card-header">
+          <div class="repo-identity">
+            <div class="repo-owner">${esc(owner)}</div>
+            <a class="repo-name-link" href="${esc(r.url)}" target="_blank" rel="noopener" title="${esc(r.repo)}">
+              <span>${esc(name)}</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+              </svg>
+            </a>
+          </div>
+          <div class="repo-badges">
+            <span class="${chipClass}">${chipText}</span>
+            <button class="repo-action-icon" onclick="copyText('${esc(r.repo)}', event)" title="复制完整仓库名">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="repo-card-body">
+          ${bodyContent}
+        </div>
+      </div>`;
+  }
+
+  function renderTableView(repos, watchType) {
+    const rows = repos.map(r => {
+      const issues = r.issues || [];
+      const top = issues[0];
+      const isError = r.reachable === false;
+
+      let statusBadge = `<span class="count-chip zero">0</span>`;
+      if (isError) {
+        statusBadge = `<span class="count-chip error">异常</span>`;
+      } else if (issues.length > 0) {
+        statusBadge = `<span class="count-chip has-items">${issues.length}</span>`;
+      }
+
+      let issueCol = '<span style="color:var(--text-muted);">暂无 open 条目</span>';
+      if (isError && !issues.length) {
+        issueCol = `<span style="color:var(--danger);">${esc(r.error || '抓取失败')}</span>`;
+      } else if (top) {
+        issueCol = `
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">#${top.number}</span>
+            <a href="${esc(top.url)}" target="_blank" rel="noopener" style="color:var(--text-primary);font-weight:500;">
+              ${esc(top.title)}
+            </a>
+          </div>`;
+      }
+
+      return `
+        <tr>
+          <td style="font-weight:600;white-space:nowrap;">
+            <a href="${esc(r.url)}" target="_blank" rel="noopener" style="color:var(--accent);">
+              ${esc(r.repo)}
+            </a>
+          </td>
+          <td style="white-space:nowrap;">${statusBadge}</td>
+          <td>${issueCol}</td>
+          <td style="white-space:nowrap;font-family:var(--font-mono);font-size:12px;color:var(--text-muted);">
+            ${top ? esc(ago(top.createdAt)) : '—'}
+          </td>
+          <td style="text-align:right;white-space:nowrap;">
+            <button class="action-btn" style="height:26px;padding:0 8px;font-size:11px;" onclick="copyText('${esc(r.repo)}', event)">
+              复制
+            </button>
+          </td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <table class="repos-table">
+        <thead>
+          <tr>
+            <th>仓库</th>
+            <th>数量</th>
+            <th>最新条目</th>
+            <th>活跃时间</th>
+            <th style="text-align:right;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>`;
+  }
+
+  function renderErrorState(err) {
+    const container = document.getElementById('repos-container');
+    container.className = '';
+    const isFileProto = window.location.protocol === 'file:';
+    container.innerHTML = `
+      <div class="no-results-box" style="border-color:var(--danger-border);background:var(--danger-bg);max-width:600px;margin:20px auto;">
+        <div class="no-results-icon">⚠️</div>
+        <h3>未能读取数据快照</h3>
+        <p style="color:var(--danger);font-weight:600;">${esc(err.message)}</p>
+        <p style="font-size:12px;color:var(--text-muted);line-height:1.6;">
+          ${isFileProto
+            ? '检测到您当前直接通过本地文件 (file://) 打开。由于浏览器同源策略限制，直接 fetch 同目录 json 会受阻。您可以启动本地静态服务器，或者点击下方按钮一键载入内置演示数据查看 UI 效果：'
+            : '无法获取 docs/data.json，请确认 GitHub Pages 已发布最新构建，或在本地网络下重试。'
+          }
+        </p>
+        <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+          <button class="reset-search-btn" onclick="loadSampleData()">载入内置演示数据预览 UI</button>
+          <button class="action-btn" onclick="location.reload()">重新载入</button>
+        </div>
+      </div>`;
+  }
+
+  // Event Listeners
+  function updatePillStyles() {
+    filterPills.querySelectorAll('.pill-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === activeFilter);
+    });
+  }
+
+  filterPills.addEventListener('click', e => {
+    const btn = e.target.closest('.pill-btn');
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    updatePillStyles();
+    renderReposList();
+  });
+
+  ownerSelect.addEventListener('change', () => {
+    activeOwner = ownerSelect.value;
+    renderReposList();
+  });
+
+  sortSelect.addEventListener('change', () => {
+    activeSort = sortSelect.value;
+    renderReposList();
+  });
+
+  viewGridBtn.addEventListener('click', () => {
+    activeView = 'grid';
+    viewGridBtn.classList.add('active');
+    viewTableBtn.classList.remove('active');
+    localStorage.setItem('iw_view_mode', 'grid');
+    renderReposList();
+  });
+
+  viewTableBtn.addEventListener('click', () => {
+    activeView = 'table';
+    viewTableBtn.classList.add('active');
+    viewGridBtn.classList.remove('active');
+    localStorage.setItem('iw_view_mode', 'table');
+    renderReposList();
+  });
+
+  searchInput.addEventListener('input', () => {
+    searchQuery = searchInput.value.trim();
+    searchClearBtn.style.display = searchQuery ? 'block' : 'none';
+    renderReposList();
+  });
+
+  searchClearBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    searchQuery = '';
+    searchClearBtn.style.display = 'none';
+    searchInput.focus();
+    renderReposList();
+  });
+
+  refreshBtn.addEventListener('click', () => {
+    loadData();
+    showToast('正在重新获取数据…');
+  });
+
+  // Global Keyboard Shortcuts
+  window.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== searchInput) {
+      e.preventDefault();
+      searchInput.focus();
+    } else if (e.key === 'Escape' && document.activeElement === searchInput) {
+      searchInput.blur();
+    }
+  });
+
+  // Initialize
+  initTheme();
+  if (activeView === 'table') {
+    viewTableBtn.classList.add('active');
+    viewGridBtn.classList.remove('active');
+  }
+  loadData();
+})();
 </script>
 </body>
 </html>
