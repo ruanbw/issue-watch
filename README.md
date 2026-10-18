@@ -2,8 +2,6 @@
 
 一个仓库、一个 token,监控散落在多个 org / 账号下的所有 GitHub 仓库,并自动发布成网页看板。
 
-**在线看板:<https://ruanbw.github.io/issue-watch/>**
-
 ![dashboard](preview.png)
 
 ## 它怎么工作
