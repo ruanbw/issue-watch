@@ -1,15 +1,33 @@
 {
  "watchType": "issues",
- "generatedAt": "2026-10-18T19:07:52.448Z",
+ "generatedAt": "2026-10-26T11:24:32.325Z",
  "stats": {
-  "scannedAt": "2026-10-18T19:07:52.448Z",
+  "scannedAt": "2026-10-26T11:24:32.325Z",
   "watchType": "issues",
   "total": 14,
-  "openIssues": 0,
+  "openIssues": 1,
   "fresh": 0,
   "unreachable": 0
  },
  "repos": [
+  {
+   "repo": "ruanbw/bennett-agent",
+   "url": "https://github.com/ruanbw/bennett-agent/issues",
+   "reachable": true,
+   "error": null,
+   "issues": [
+    {
+     "number": 1,
+     "title": "演示视频素材（README 引用，请勿删除）",
+     "url": "https://github.com/ruanbw/bennett-agent/issues/1",
+     "isPr": false,
+     "author": "ruanbw",
+     "createdAt": "2026-10-26T08:42:21Z",
+     "comments": 0,
+     "labels": []
+    }
+   ]
+  },
   {
    "repo": "bennett-dsh/dsh-plugin-usage",
    "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues",
@@ -27,13 +45,6 @@
   {
    "repo": "ruanbw/bennett",
    "url": "https://github.com/ruanbw/bennett/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
-  },
-  {
-   "repo": "ruanbw/bennett-agent",
-   "url": "https://github.com/ruanbw/bennett-agent/issues",
    "reachable": true,
    "error": null,
    "issues": []

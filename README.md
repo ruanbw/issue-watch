@@ -171,7 +171,7 @@ for (const i of freshIssues) {
 <!-- ISSUE-WATCH:START -->
 ## Issue 总览
 
-扫描时间:2026-10-26 05:26 UTC · 仓库 14 个 · open issue 0 个 · 本轮新增 **0** 个
+扫描时间:2026-10-26 11:24 UTC · 仓库 14 个 · open issue 1 个 · 本轮新增 **0** 个
 
 ### 最近新增(近 7 天)
 
@@ -181,10 +181,10 @@ _最近没有新增 issue_
 
 | 仓库 | open | 最新 issue | 时间 |
 |---|--:|---|---|
+| [ruanbw/bennett-agent](https://github.com/ruanbw/bennett-agent/issues) | 1 | [#1 演示视频素材（README 引用，请勿删除）](https://github.com/ruanbw/bennett-agent/issues/1) | 2 小时前 |
 | [bennett-dsh/dsh-plugin-usage](https://github.com/bennett-dsh/dsh-plugin-usage/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/agent-sweep](https://github.com/ruanbw/agent-sweep/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/bennett](https://github.com/ruanbw/bennett/issues) | 0 | _暂无 open issue_ | — |
-| [ruanbw/bennett-agent](https://github.com/ruanbw/bennett-agent/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/bennett-usage](https://github.com/ruanbw/bennett-usage/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/CertFlow](https://github.com/ruanbw/CertFlow/issues) | 0 | _暂无 open issue_ | — |
 | [ruanbw/conversation-clean](https://github.com/ruanbw/conversation-clean/issues) | 0 | _暂无 open issue_ | — |
