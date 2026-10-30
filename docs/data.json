@@ -1,15 +1,33 @@
 {
  "watchType": "issues",
- "generatedAt": "2026-10-30T07:15:29.438Z",
+ "generatedAt": "2026-10-30T23:15:19.038Z",
  "stats": {
-  "scannedAt": "2026-10-30T07:15:29.438Z",
+  "scannedAt": "2026-10-30T23:15:19.038Z",
   "watchType": "issues",
   "total": 14,
-  "openIssues": 2,
+  "openIssues": 3,
   "fresh": 0,
   "unreachable": 0
  },
  "repos": [
+  {
+   "repo": "bennett-dsh/dsh-plugin-usage",
+   "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues",
+   "reachable": true,
+   "error": null,
+   "issues": [
+    {
+     "number": 6,
+     "title": "发布 0.5.0 到 npm（GitHub Release 已就绪）",
+     "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues/6",
+     "isPr": false,
+     "author": "xinspark",
+     "createdAt": "2026-10-30T19:48:14Z",
+     "comments": 0,
+     "labels": []
+    }
+   ]
+  },
   {
    "repo": "ruanbw/pi-deepseek-cache",
    "url": "https://github.com/ruanbw/pi-deepseek-cache/issues",
@@ -45,13 +63,6 @@
      "labels": []
     }
    ]
-  },
-  {
-   "repo": "bennett-dsh/dsh-plugin-usage",
-   "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
   },
   {
    "repo": "ruanbw/agent-sweep",

@@ -2,9 +2,20 @@
  "watchType": "issues",
  "repos": {
   "bennett-dsh/dsh-plugin-usage": {
-   "etag": "\"c4b2fcb37516b3c64ebebc8f80c3c6a0559dbabf29b0b002a7054478ebab77b5\"",
-   "lastCreatedAt": null,
-   "issues": []
+   "etag": "W/\"8a95b5eed3d35917aadaa1c4ed1096d3c3c2fb6d472d96e14e59e78c1c9feeba\"",
+   "lastCreatedAt": "2026-10-30T19:48:14Z",
+   "issues": [
+    {
+     "number": 6,
+     "title": "发布 0.5.0 到 npm（GitHub Release 已就绪）",
+     "url": "https://github.com/bennett-dsh/dsh-plugin-usage/issues/6",
+     "isPr": false,
+     "author": "xinspark",
+     "createdAt": "2026-10-30T19:48:14Z",
+     "comments": 0,
+     "labels": []
+    }
+   ]
   },
   "ruanbw/agent-sweep": {
    "etag": "\"c4b2fcb37516b3c64ebebc8f80c3c6a0559dbabf29b0b002a7054478ebab77b5\"",
