@@ -1,15 +1,33 @@
 {
  "watchType": "issues",
- "generatedAt": "2026-10-26T11:24:32.325Z",
+ "generatedAt": "2026-10-30T07:15:29.438Z",
  "stats": {
-  "scannedAt": "2026-10-26T11:24:32.325Z",
+  "scannedAt": "2026-10-30T07:15:29.438Z",
   "watchType": "issues",
   "total": 14,
-  "openIssues": 1,
+  "openIssues": 2,
   "fresh": 0,
   "unreachable": 0
  },
  "repos": [
+  {
+   "repo": "ruanbw/pi-deepseek-cache",
+   "url": "https://github.com/ruanbw/pi-deepseek-cache/issues",
+   "reachable": true,
+   "error": null,
+   "issues": [
+    {
+     "number": 43,
+     "title": "误报：尾部临时注入块导致每轮 Cache prefix changed",
+     "url": "https://github.com/ruanbw/pi-deepseek-cache/issues/43",
+     "isPr": false,
+     "author": "SuperLuckAo",
+     "createdAt": "2026-10-30T03:29:52Z",
+     "comments": 0,
+     "labels": []
+    }
+   ]
+  },
   {
    "repo": "ruanbw/bennett-agent",
    "url": "https://github.com/ruanbw/bennett-agent/issues",
@@ -101,13 +119,6 @@
   {
    "repo": "ruanbw/nodem-clean",
    "url": "https://github.com/ruanbw/nodem-clean/issues",
-   "reachable": true,
-   "error": null,
-   "issues": []
-  },
-  {
-   "repo": "ruanbw/pi-deepseek-cache",
-   "url": "https://github.com/ruanbw/pi-deepseek-cache/issues",
    "reachable": true,
    "error": null,
    "issues": []
