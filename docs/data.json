@@ -1,11 +1,11 @@
 {
- "watchType": "all",
- "generatedAt": "2026-10-31T04:48:34.870Z",
+ "watchType": "issues",
+ "generatedAt": "2026-10-31T08:53:18.934Z",
  "stats": {
-  "scannedAt": "2026-10-31T04:48:34.870Z",
-  "watchType": "all",
+  "scannedAt": "2026-10-31T08:53:18.934Z",
+  "watchType": "issues",
   "total": 14,
-  "openIssues": 3,
+  "openIssues": 1,
   "fresh": 0,
   "unreachable": 0
  },
@@ -24,34 +24,6 @@
      "author": "ruanbw",
      "createdAt": "2026-10-26T08:42:21Z",
      "comments": 0,
-     "labels": []
-    }
-   ]
-  },
-  {
-   "repo": "ruanbw/pi-deepseek-cache",
-   "url": "https://github.com/ruanbw/pi-deepseek-cache/issues",
-   "reachable": true,
-   "error": null,
-   "issues": [
-    {
-     "number": 42,
-     "title": "chore(deps-dev): bump eslint from 10.12.0 to 10.13.0",
-     "url": "https://github.com/ruanbw/pi-deepseek-cache/pull/42",
-     "isPr": true,
-     "author": "dependabot[bot]",
-     "createdAt": "2026-10-25T19:05:08Z",
-     "comments": 1,
-     "labels": []
-    },
-    {
-     "number": 41,
-     "title": "chore(deps-dev): bump typescript-eslint from 8.71.1 to 8.72.1",
-     "url": "https://github.com/ruanbw/pi-deepseek-cache/pull/41",
-     "isPr": true,
-     "author": "dependabot[bot]",
-     "createdAt": "2026-10-25T19:05:01Z",
-     "comments": 1,
      "labels": []
     }
    ]
@@ -129,6 +101,13 @@
   {
    "repo": "ruanbw/nodem-clean",
    "url": "https://github.com/ruanbw/nodem-clean/issues",
+   "reachable": true,
+   "error": null,
+   "issues": []
+  },
+  {
+   "repo": "ruanbw/pi-deepseek-cache",
+   "url": "https://github.com/ruanbw/pi-deepseek-cache/issues",
    "reachable": true,
    "error": null,
    "issues": []
