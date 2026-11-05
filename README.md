@@ -171,7 +171,7 @@ for (const i of freshIssues) {
 <!-- ISSUE-WATCH:START -->
 ## Issue 总览
 
-扫描时间:2026-11-04 23:14 UTC · 仓库 14 个 · open issue 1 个 · 本轮新增 **0** 个
+扫描时间:2026-11-05 03:31 UTC · 仓库 14 个 · open issue 1 个 · 本轮新增 **0** 个
 
 ### 最近新增(近 7 天)
 
